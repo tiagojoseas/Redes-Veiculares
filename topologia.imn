@@ -100,9 +100,11 @@ node n12 {
 	!
     }
     canvas c1
-    iconcoords {187.0 478.0}
-    labelcoords {187.0 510.0}
+    iconcoords {677.0 480.0}
+    labelcoords {677.0 512.0}
     interface-peer {eth0 n4}
+    services {zebra OSPFv3MDR IPForward}
+    custom-image /home/core/Redes-Veiculares/mcqueen.png
 }
 
 node n13 {
@@ -116,9 +118,10 @@ node n13 {
 	!
     }
     canvas c1
-    iconcoords {405.0 420.0}
-    labelcoords {405.0 452.0}
+    iconcoords {580.0 420.0}
+    labelcoords {580.0 452.0}
     interface-peer {eth0 n4}
+    services {zebra OSPFv3MDR IPForward}
 }
 
 node n14 {
@@ -181,6 +184,7 @@ node n4 {
 	mobmodel
 	coreapi
 	basic_range
+	ns2script
 	!
     }
     custom-config {
@@ -192,6 +196,20 @@ node n4 {
 	jitter=0
 	delay=20000
 	error=0
+	}
+    }
+    custom-config {
+	custom-config-id ns2script
+	custom-command {10 3 11 10 10 10 10 10}
+	config {
+	file=/home/core/Redes-Veiculares/mobility.scen
+	refresh_ms=50
+	loop=1
+	autostart=
+	map=
+	script_start=
+	script_pause=
+	script_stop=
 	}
     }
     canvas c1

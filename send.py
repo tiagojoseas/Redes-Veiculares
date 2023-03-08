@@ -12,10 +12,7 @@ sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 # Configura o socket para permitir o envio de mensagens de multicast
 sock.setsockopt(socket.IPPROTO_IPV6, socket.IP_MULTICAST_TTL, 1)
 
-# Configura o socket para receber mensagens de multicast
-sock.bind(('', PORT))
-sock.setsockopt(socket.IPPROTO_IPV6, socket.IP_ADD_MEMBERSHIP,
-                socket.inet_pton(socket.AF_INET6, MULTICAST_GROUP))
+
 
 # Função que envia mensagens em um loop
 def enviar_mensagens():
@@ -29,6 +26,10 @@ def enviar_mensagens():
 
 # Função que recebe mensagens em um loop
 def receber_mensagens():
+    # Configura o socket para receber mensagens de multicast
+    sock.bind(('::', PORT))
+    sock.setsockopt(socket.IPPROTO_IPV6, socket.IP_ADD_MEMBERSHIP,
+                    socket.inet_aton( MULTICAST_GROUP))
     while True:
         data, addr = sock.recvfrom(1024)
         message = struct.unpack('!50s', data)[0].decode().rstrip('\x00')

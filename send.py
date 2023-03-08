@@ -27,9 +27,11 @@ def enviar_mensagens():
 # Função que recebe mensagens em um loop
 def receber_mensagens():
     # Configura o socket para receber mensagens de multicast
-    sock.bind(('::', PORT))
-    sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP,
-                    socket.inet_pton(socket.AF_INET6, MULTICAST_GROUP))
+    sock.bind(('', PORT))
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, 0)
+                    #socket.inet_pton(socket.AF_INET6, MULTICAST_GROUP))
+    
     while True:
         data, addr = sock.recvfrom(1024)
         message = struct.unpack('!50s', data)[0].decode().rstrip('\x00')

@@ -18,3 +18,4 @@ while True:
     # Envia a mensagem para o grupo multicast
     sock.sendto(message.encode(), (MULTICAST_GROUP, PORT))
 
+

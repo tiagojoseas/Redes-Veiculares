@@ -46,4 +46,4 @@ receive.start()
 # Aguarda até que ambas as threads terminem
 send.join()
 receive.join()
-recebimento_thread.join()
+

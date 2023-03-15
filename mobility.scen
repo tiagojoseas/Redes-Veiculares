@@ -39,6 +39,9 @@ $ns_ at 10.00 "$node_(14) setdest 190.0 180.0 35.0"
 $ns_ at 15.00 "$node_(14) setdest 70.0 300.0 35.0"
 $ns_ at 25.00 "$node_(14) setdest 460.0 490.0 35.0"
 
+$ns_ at 10.00 "$node_(15) setdest 400.0 480.0 40.0"
+$ns_ at 25.00 "$node_(15) setdest 640.0 430.0 35.0"
+
 $ns_ at 1.00 "$node_(16) setdest 830.0 450.0 35.0"
 $ns_ at 10.00 "$node_(16) setdest 680.0 400.0 50.0"
 $ns_ at 18.00 "$node_(16) setdest 400.0 430.0 35.0"

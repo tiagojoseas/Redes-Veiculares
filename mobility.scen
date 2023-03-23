@@ -7,33 +7,46 @@ $node_(12) set X_ 610.0
 $node_(12) set Y_ 882.0
 $node_(12) set Z_ 0.00
 
+$node_(14) set X_ 323.0
+$node_(14) set Y_ 754.0
+$node_(14) set Z_ 0.00
+
 $node_(16) set X_ 1135.0
 $node_(16) set Y_ 375.0
 $node_(16) set Z_ 0.00
+
 $ns_ at 1.00 "$node_(12) setdest 610.0 420.0 40.0"
-$ns_ at 13.00 "$node_(12) setdest 330.0 420.0 40.0"
-$ns_ at 20.00 "$node_(12) setdest 270.0 460.0 40.0"
-$ns_ at 22.00 "$node_(12) setdest 330.0 520.0 40.0"
-$ns_ at 24.00 "$node_(12) setdest 610.0 520.0 40.0"
-$ns_ at 35.00 "$node_(12) setdest 610.0 250.0 30.0"
-$ns_ at 40.00 "$node_(12) setdest 890.0 250.0 25.0"
+$ns_ at 10.00 "$node_(12) setdest 330.0 420.0 40.0"
+$ns_ at 20.00 "$node_(12) setdest 270.0 460.0 35.0"
+$ns_ at 22.00 "$node_(12) setdest 330.0 520.0 35.0"
+$ns_ at 24.00 "$node_(12) setdest 500.0 520.0 40.0"
+$ns_ at 34.00 "$node_(12) setdest 610.0 520.0 40.0"
+$ns_ at 36.00 "$node_(12) setdest 610.0 250.0 30.0"
+$ns_ at 45.00 "$node_(12) setdest 890.0 250.0 25.0"
 $ns_ at 70.00 "$node_(12) setdest 890.0 60.0 35.0"
 $ns_ at 75.00 "$node_(12) setdest 570.0 60.0 45.0"
 $ns_ at 80.00 "$node_(12) setdest 570.0 882.0 45.0"
-$ns_ at 950.00 "$node_(12) setdest 610.0 882.0 45.0"
+$ns_ at 100.00 "$node_(12) setdest 610.0 882.0 45.0"
+
+$ns_ at 3.00 "$node_(14) setdest 610.0 754.0 30.0"
+$ns_ at 13.00 "$node_(14) setdest 610.0 40.0 30.0"
+$ns_ at 36.00 "$node_(14) setdest 921.0 70.0 30.0"
+$ns_ at 50.00 "$node_(14) setdest 1000.0 241.0 30.0"
+$ns_ at 56.00 "$node_(14) setdest 660.0 271.0 30.0"
+
 
 $ns_ at 0.00 "$node_(16) setdest 1050.0 365.0 40.0"
 $ns_ at 1.00 "$node_(16) setdest 1030.0 315.0 35.0"
 $ns_ at 2.00 "$node_(16) setdest 1020.0 180.0 40.0"
 $ns_ at 6.00 "$node_(16) setdest 975.0 60.0 40.0"
 $ns_ at 9.00 "$node_(16) setdest 570.0 60.0 35.0"
-$ns_ at 23.00 "$node_(16) setdest 570.0 600.0 40.0"
+$ns_ at 21.00 "$node_(16) setdest 570.0 600.0 40.0"
+$ns_ at 36.00 "$node_(16) setdest 680.0 600.0 25.0"
 $ns_ at 40.00 "$node_(16) setdest 680.0 600.0 25.0"
-$ns_ at 45.00 "$node_(16) setdest 680.0 600.0 25.0"
-$ns_ at 48.00 "$node_(16) setdest 650.0 560.0 25.0"
-$ns_ at 50.00 "$node_(16) setdest 650.0 560.0 25.0"
-$ns_ at 52.00 "$node_(16) setdest 610.0 560.0 45.0"
-$ns_ at 60.00 "$node_(16) setdest 610.0 250.0 45.0"
+$ns_ at 41.00 "$node_(16) setdest 650.0 560.0 25.0"
+$ns_ at 42.00 "$node_(16) setdest 650.0 560.0 25.0"
+$ns_ at 43.00 "$node_(16) setdest 610.0 560.0 45.0"
+$ns_ at 45.00 "$node_(16) setdest 610.0 250.0 45.0"
 $ns_ at 78.00 "$node_(16) setdest 610.0 250.0 45.0"
 $ns_ at 80.00 "$node_(16) setdest 960.0 250.0 45.0"
 $ns_ at 95.00 "$node_(16) setdest 1135.0 375.0 45.0"

@@ -146,7 +146,6 @@ node n11 {
 	
 	}
     }
-    custom-image /home/core/Redes-Veiculares/rsu.png
 }
 
 node n12 {
@@ -161,8 +160,8 @@ node n12 {
 	!
     }
     canvas c1
-    iconcoords {609.0 764.0}
-    labelcoords {609.0 796.0}
+    iconcoords {813.0 258.0}
+    labelcoords {813.0 290.0}
     services {OSPFv3MDR zebra IPForward}
     interface-peer {eth0 n4}
     custom-config {
@@ -194,7 +193,7 @@ node n12 {
 	
 	}
     }
-    custom-image /home/core/Redes-Veiculares/mcqueen.png
+    custom-image /home/core/Redes-Veiculares/images/mcqueen.png
 }
 
 node n13 {
@@ -209,8 +208,8 @@ node n13 {
 	!
     }
     canvas c1
-    iconcoords {517.6666666666667 310.0}
-    labelcoords {508.66666666666674 355.0}
+    iconcoords {510.0 305.0}
+    labelcoords {510.0 337.0}
     services {OSPFv3MDR zebra IPForward}
     interface-peer {eth0 n4}
     custom-config {
@@ -242,7 +241,7 @@ node n13 {
 	
 	}
     }
-    custom-image /home/core/Redes-Veiculares/fiat500.png
+    custom-image /home/core/Redes-Veiculares/images/fiat500.png
 }
 
 node n14 {
@@ -257,8 +256,8 @@ node n14 {
 	!
     }
     canvas c1
-    iconcoords {323.33333333333337 754.6666666666666}
-    labelcoords {309.33333333333337 799.6666666666666}
+    iconcoords {323.0 754.0}
+    labelcoords {323.0 786.0}
     services {OSPFv3MDR zebra IPForward}
     interface-peer {eth0 n4}
     custom-config {
@@ -290,7 +289,7 @@ node n14 {
 	
 	}
     }
-    custom-image /home/core/Redes-Veiculares/matter.png
+    custom-image /home/core/Redes-Veiculares/images/matter.png
 }
 
 node n15 {
@@ -305,8 +304,8 @@ node n15 {
 	!
     }
     canvas c1
-    iconcoords {687.0 389.0}
-    labelcoords {687.0 421.0}
+    iconcoords {670.0 417.0}
+    labelcoords {670.0 449.0}
     services {OSPFv3MDR zebra IPForward}
     interface-peer {eth0 n4}
     custom-config {
@@ -339,7 +338,7 @@ node n15 {
 	
 	}
     }
-    custom-image /home/core/Redes-Veiculares/doc.png
+    custom-image /home/core/Redes-Veiculares/images/doc.png
 }
 
 node n16 {
@@ -354,8 +353,8 @@ node n16 {
 	!
     }
     canvas c1
-    iconcoords {610.0 560.0}
-    labelcoords {610.0 592.0}
+    iconcoords {650.0 560.0}
+    labelcoords {650.0 592.0}
     services {OSPFv3MDR zebra IPForward}
     interface-peer {eth0 n4}
     custom-config {
@@ -387,7 +386,7 @@ node n16 {
 	
 	}
     }
-    custom-image /home/core/Redes-Veiculares/sally.png
+    custom-image /home/core/Redes-Veiculares/images/sally.png
 }
 
 node n4 {
@@ -445,8 +444,8 @@ node n4 {
 	}
     }
     canvas c1
-    iconcoords {1128.0 814.6666666666666}
-    labelcoords {1130.0 848.6666666666666}
+    iconcoords {1129.0 789.6666666666666}
+    labelcoords {1131.0 823.6666666666666}
     interface-peer {e0 n11}
     interface-peer {e1 n12}
     interface-peer {e2 n13}
@@ -941,7 +940,7 @@ link l20 {
 canvas c1 {
     name {Canvas1}
     wallpaper-style {scaled}
-    wallpaper {/home/core/Redes-Veiculares/mapa.png}
+    wallpaper {/home/core/Redes-Veiculares/images/mapa.png}
     refpt {0 0 47.5791667 -122.132322 2.0}
     scale {150.0}
     size {1165 918}

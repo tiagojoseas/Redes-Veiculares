@@ -1,28 +1,20 @@
-import socket, struct, threading, json, time, random
+import socket
+import struct
+import threading
 
 mcast_addr = 'ff05::4'
 port = 3000
 # Create a socket
 sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 
-NAME_CAR = socket.gethostname()
-
 def send_msg():
     
     while True:
         # Lê a mensagem a ser enviada do usuário
-        #message = input( )
+        message = input( )
 
-        message = {
-            "car": NAME_CAR,
-            "velocity": random.randint(0,100)
-        }
-
-        message_string = json.dumps(message)
         # Envia a mensagem para o grupo multicast
-        sock.sendto(message_string.encode(), (mcast_addr, port))
-        print(message_string)
-        time.sleep(1)
+        sock.sendto(message.encode(), (mcast_addr, port))
 
 def receive_msg():
     # Bind the socket to an address and port
@@ -53,4 +45,3 @@ receive.start()
 # Aguarda até que ambas as threads terminem
 send.join()
 receive.join()
-

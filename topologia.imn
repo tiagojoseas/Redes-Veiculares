@@ -5,8 +5,8 @@ node n1 {
 	!
     }
     canvas c1
-    iconcoords {1645.0 330.0}
-    labelcoords {1629.0 380.6666666666667}
+    iconcoords {796.0 198.0}
+    labelcoords {793.0 230.66666666666669}
     interface-peer {e0 n3}
     interface-peer {e1 n11}
     interface-peer {e2 n2}
@@ -23,8 +23,8 @@ node n2 {
 	!
     }
     canvas c1
-    iconcoords {1665.0 112.66666666666667}
-    labelcoords {1665.0 144.66666666666666}
+    iconcoords {841.0 132.66666666666669}
+    labelcoords {841.0 164.66666666666666}
     services {DefaultRoute SSH}
     interface-peer {eth0 n1}
 }
@@ -44,8 +44,8 @@ node n3 {
 	!
     }
     canvas c1
-    iconcoords {1373.6666666666667 170.0}
-    labelcoords {1407.6666666666667 160.0}
+    iconcoords {735.6666666666667 41.0}
+    labelcoords {736.6666666666667 24.0}
     services {OSPFv3 zebra IPForward}
     interface-peer {eth1 n1}
     custom-config {
@@ -102,8 +102,8 @@ node n11 {
 	!
     }
     canvas c1
-    iconcoords {1403.6666666666667 640.6666666666666}
-    labelcoords {1355.6666666666667 642.6666666666666}
+    iconcoords {868.6666666666667 353.66666666666663}
+    labelcoords {820.6666666666667 355.66666666666663}
     services {OSPFv3 OSPFv3MDR zebra IPForward}
     interface-peer {eth0 n1}
     interface-peer {eth1 n4}
@@ -146,6 +146,7 @@ node n11 {
 	
 	}
     }
+    custom-image /home/core/Redes-Veiculares/rsu.png
 }
 
 node n12 {
@@ -160,8 +161,8 @@ node n12 {
 	!
     }
     canvas c1
-    iconcoords {489.0 729.0}
-    labelcoords {489.0 761.0}
+    iconcoords {609.0 764.0}
+    labelcoords {609.0 796.0}
     services {OSPFv3MDR zebra IPForward}
     interface-peer {eth0 n4}
     custom-config {
@@ -208,8 +209,8 @@ node n13 {
 	!
     }
     canvas c1
-    iconcoords {277.6666666666667 748.0}
-    labelcoords {277.6666666666667 780.0}
+    iconcoords {517.6666666666667 310.0}
+    labelcoords {508.66666666666674 355.0}
     services {OSPFv3MDR zebra IPForward}
     interface-peer {eth0 n4}
     custom-config {
@@ -241,6 +242,7 @@ node n13 {
 	
 	}
     }
+    custom-image /home/core/Redes-Veiculares/fiat500.png
 }
 
 node n14 {
@@ -255,8 +257,8 @@ node n14 {
 	!
     }
     canvas c1
-    iconcoords {523.3333333333334 960.6666666666666}
-    labelcoords {523.3333333333334 992.6666666666666}
+    iconcoords {323.33333333333337 754.6666666666666}
+    labelcoords {309.33333333333337 799.6666666666666}
     services {OSPFv3MDR zebra IPForward}
     interface-peer {eth0 n4}
     custom-config {
@@ -288,6 +290,7 @@ node n14 {
 	
 	}
     }
+    custom-image /home/core/Redes-Veiculares/matter.png
 }
 
 node n15 {
@@ -302,8 +305,8 @@ node n15 {
 	!
     }
     canvas c1
-    iconcoords {926.0 784.0}
-    labelcoords {926.0 816.0}
+    iconcoords {687.0 389.0}
+    labelcoords {687.0 421.0}
     services {OSPFv3MDR zebra IPForward}
     interface-peer {eth0 n4}
     custom-config {
@@ -336,6 +339,7 @@ node n15 {
 	
 	}
     }
+    custom-image /home/core/Redes-Veiculares/doc.png
 }
 
 node n16 {
@@ -350,8 +354,8 @@ node n16 {
 	!
     }
     canvas c1
-    iconcoords {746.0 662.0}
-    labelcoords {746.0 694.0}
+    iconcoords {610.0 560.0}
+    labelcoords {610.0 592.0}
     services {OSPFv3MDR zebra IPForward}
     interface-peer {eth0 n4}
     custom-config {
@@ -383,6 +387,7 @@ node n16 {
 	
 	}
     }
+    custom-image /home/core/Redes-Veiculares/sally.png
 }
 
 node n4 {
@@ -440,8 +445,8 @@ node n4 {
 	}
     }
     canvas c1
-    iconcoords {1561.0 972.6666666666666}
-    labelcoords {1561.0 1004.6666666666666}
+    iconcoords {1128.0 814.6666666666666}
+    labelcoords {1130.0 848.6666666666666}
     interface-peer {e0 n11}
     interface-peer {e1 n12}
     interface-peer {e2 n13}
@@ -457,8 +462,8 @@ node n10 {
 	!
     }
     canvas c1
-    iconcoords {56.333333333333336 201.33333333333334}
-    labelcoords {16.333333333333332 254.66666666666666}
+    iconcoords {18.333333333333336 186.33333333333334}
+    labelcoords {20.33333333333333 177.66666666666666}
     interface-peer {e0 n17}
     interface-peer {e1 n18}
     interface-peer {e2 n5}
@@ -475,8 +480,8 @@ node n17 {
 	!
     }
     canvas c1
-    iconcoords {43.0 114.0}
-    labelcoords {43.0 146.0}
+    iconcoords {18.0 26.0}
+    labelcoords {18.0 58.0}
     interface-peer {eth0 n10}
 }
 
@@ -490,8 +495,8 @@ node n18 {
 	!
     }
     canvas c1
-    iconcoords {39.0 488.0}
-    labelcoords {39.0 520.0}
+    iconcoords {17.0 314.0}
+    labelcoords {17.0 346.0}
     interface-peer {eth0 n10}
 }
 
@@ -515,8 +520,8 @@ node n5 {
 	!
     }
     canvas c1
-    iconcoords {324.0 98.66666666666667}
-    labelcoords {324.0 130.66666666666666}
+    iconcoords {172.0 20.66666666666667}
+    labelcoords {130.0 26.666666666666657}
     interface-peer {eth0 n10}
     custom-config {
 	custom-config-id service:zebra
@@ -594,8 +599,8 @@ node n6 {
 	!
     }
     canvas c1
-    iconcoords {297.3333333333333 482.6666666666667}
-    labelcoords {297.3333333333333 514.6666666666666}
+    iconcoords {172.33333333333331 185.66666666666669}
+    labelcoords {172.33333333333331 217.66666666666663}
     interface-peer {eth0 n10}
     services {OSPFv3 zebra IPForward}
     interface-peer {eth1 n5}
@@ -661,8 +666,8 @@ node n7 {
 	!
     }
     canvas c1
-    iconcoords {918.6666666666666 488.0}
-    labelcoords {918.6666666666666 520.0}
+    iconcoords {501.66666666666663 187.0}
+    labelcoords {501.66666666666663 219.0}
     interface-peer {eth0 n6}
     interface-peer {eth1 n8}
     services {OSPFv3 zebra IPForward}
@@ -735,8 +740,8 @@ node n8 {
 	!
     }
     canvas c1
-    iconcoords {932.0 117.33333333333333}
-    labelcoords {932.0 149.33333333333331}
+    iconcoords {502.0 21.33333333333333}
+    labelcoords {502.0 53.333333333333314}
     interface-peer {eth0 n5}
     interface-peer {eth1 n7}
     services {OSPFv3 zebra IPForward}
@@ -788,8 +793,8 @@ node n9 {
 	!
     }
     canvas c1
-    iconcoords {611.0 280.0}
-    labelcoords {611.0 312.0}
+    iconcoords {351.0 116.0}
+    labelcoords {351.0 148.0}
     interface-peer {eth0 n7}
     interface-peer {eth1 n5}
     custom-config {
@@ -935,9 +940,11 @@ link l20 {
 
 canvas c1 {
     name {Canvas1}
+    wallpaper-style {scaled}
+    wallpaper {/home/core/Redes-Veiculares/mapa.png}
     refpt {0 0 47.5791667 -122.132322 2.0}
     scale {150.0}
-    size {2000 1500}
+    size {1165 918}
 }
 
 option global {
@@ -949,7 +956,7 @@ option global {
     show_api no
     background_images no
     annotations yes
-    grid yes
+    grid no
     traffic_start 0
 }
 

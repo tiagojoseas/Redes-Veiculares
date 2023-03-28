@@ -20,8 +20,6 @@ def send_msg():
         for ip_node in cars_connected.keys():
             car = cars_connected[ip_node]
             timestamp = car.get(FIELD_LAST_CONNECTION)
-            status = "CONNECTED "
-            print(datetime.timestamp(datetime.now()), timestamp, datetime.timestamp(datetime.now())- timestamp)
             if datetime.timestamp(datetime.now()) - timestamp > 1.2:
                 status ="DISCONNECTED"                
             dt = datetime.fromtimestamp(timestamp)

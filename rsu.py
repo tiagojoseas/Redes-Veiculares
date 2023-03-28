@@ -1,7 +1,6 @@
 import socket,struct, threading, json
 from datetime import datetime
 from TYPES import *
-from prettytable import PrettyTable
 
 mcast_addr = 'ff05::4'
 port = 3000
@@ -10,22 +9,20 @@ sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 
 cars_connected = {}
 
-table = PrettyTable(["IP", "NOME NÓ", "VELOCIDADE (kmh)", "ÚLTIMA CONEXÇÃO"])
 def send_msg():
     
     while True:
         # Lê a mensagem a ser enviada do usuário
-        input("\n\nPrima enter para mostrar os dados\n\n")
-
-        print("Conectados "+str(len(cars_connected))+" carros\n")
+        input("Prima enter para mostrar os dados")
+        print("-"*50)
+        print("Conectados "+str(len(cars_connected))+" carros")
 
         for ip_node in cars_connected.keys():
             car = cars_connected[ip_node]
             dt = datetime.fromtimestamp(car.get(FIELD_LAST_CONNECTION))
-            table.addRow([ip_node,car.get(FIELD_NAME), car.get(FIELD_VELOCITY), dt])
-            #show_recv = "["+str(ip_node)+"] "+ car.get(FIELD_NAME)+" - "+ str(car.get(FIELD_VELOCITY))+" kmh ("+str(dt)+")"
-            #print(show_recv)
-        print(table)
+            show_recv = "["+str(ip_node)+"] "+ car.get(FIELD_NAME)+" - "+ str(car.get(FIELD_VELOCITY))+" kmh ("+str(dt)+")"
+            print(show_recv)
+        print("-"*50)
         # Envia a mensagem para o grupo multicast
         #sock.sendto(message.encode(), (mcast_addr, port))
 

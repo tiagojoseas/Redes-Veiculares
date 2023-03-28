@@ -43,7 +43,7 @@ def receive_msg():
         data, addr = sock.recvfrom(1024)
         data = json.loads(data.decode())
         #print("From " + str(addr) + ": " + data.decode())
-        show_recv = "["+str(addr[0])+"] "+ data.get(FIELD_NAME)+" - "+ str(data.get(FIELD_VELOCITY))+" kmh"
+        show_recv = "["+str(addr[0])+"] "+ data.get(FIELD_NAME)+": "+ str(data.get(FIELD_VELOCITY))+" kmh"
         print(show_recv)
 
 receive = threading.Thread(target=receive_msg)

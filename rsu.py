@@ -1,20 +1,22 @@
-import socket
-import struct
-import threading
+import socket,struct, threading, json
+from datetime import datetime
 
 mcast_addr = 'ff05::4'
 port = 3000
 # Create a socket
 sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 
+cars_connected = {}
+
 def send_msg():
     
     while True:
         # Lê a mensagem a ser enviada do usuário
         message = input( )
-
+        for car in cars_connected:
+            print(car)
         # Envia a mensagem para o grupo multicast
-        sock.sendto(message.encode(), (mcast_addr, port))
+        #sock.sendto(message.encode(), (mcast_addr, port))
 
 def receive_msg():
     # Bind the socket to an address and port
@@ -34,7 +36,13 @@ def receive_msg():
   
     while True:
         data, addr = sock.recvfrom(1024)
-        print("From " + str(addr) + ": " + data.decode())
+        data = json.loads(data)
+        data["last_connection"] = str(datetime.now())
+        cars_connected[str(addr[0])] = data
+        print(data)
+        #print("[+]",data.get("car"),"-", data.get("velocity")+" kmh")
+        #print(data[car], data[velocity])
+        #print("From " + str(addr) + ": " + data.decode())
 
 send = threading.Thread(target=send_msg)
 receive = threading.Thread(target=receive_msg)

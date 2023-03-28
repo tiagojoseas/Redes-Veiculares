@@ -12,7 +12,6 @@ def send_msg():
     while True:
         # Lê a mensagem a ser enviada do usuário
         #message = input( )
-
         message = {
             "car": NAME_CAR,
             "velocity": random.randint(0,100)
@@ -29,7 +28,6 @@ def receive_msg():
     sock.bind(('::', port))
 
     # Set the multicast group address and interface index
-
     iface_index = 0
 
     # Construct the group address tuple

@@ -51,6 +51,7 @@ def analyze_connections():
                 if last_status.get(ip_node) != status:  
                     show_recv = "["+str(ip_node)+"] "+ car.get(FIELD_NAME)+" -> "+("DISCONNECTED" if status == 0 else "CONNECTED")
                     last_status[ip_node] = status
+                    cars_connected[ip_node][FIELD_STATUS_CONNECTION]=status
                     print(show_recv) 
 
         # Envia a mensagem para o grupo multicast

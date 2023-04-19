@@ -1,7 +1,7 @@
 import datetime
 import socket,struct, threading, json, random, time
 from TYPES import *
-
+from netifaces import ifaddresses, AF_INET6
 
 mcast_addr = 'ff05::4'
 port = 3000
@@ -9,30 +9,35 @@ port = 3000
 sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 
 NODE_NAME = socket.gethostname()
-IPV6_ADDR = socket.gethostbyname(NODE_NAME)
 
+
+addresses = [i['addr'] for i in ifaddresses("eth0").setdefault(AF_INET6, [{'addr':'No IP addr'}])]
+IPV6_ADDR = addresses[0]
 cars_connected = {} #dicionario para saber quais os carros conectados
 
 messages = [] #lista para guardar mensagens para depois reencaminhar
 
 #pegar na localizacao do RSU
-f_rsu = open("RSU.xy", "r")
+f_rsu = open("n11.xy", "r")
 pos_rsu = f_rsu.read().split()
 pos_rsu_x = float(pos_rsu[0])
 pos_rsu_y = float(pos_rsu[1])
 
 #abrir o seu ficheiro de posicao
 f_pos = open(NODE_NAME.join(".xy"), "r")
+pos = f_pos.read().split() 
+pos_x = float(pos[0])
+pos_y = float(pos[1])
 
 #envia uma mensagem com a sua posicao em multicast para os vizinhos
 #assim, os vizinhos sabem a sua posicao e tambem sabem que estao conectados
 def send_connection():
     while True:
-        pos = f_pos.read().split() 
+        
         data = {
             FIELD_TYPE_MSG: CONNECTION_MSG,
-            FIELD_POS_X: float(pos[0]), #!!! ler do ficheiro de posições
-            FIELD_POS_Y: float(pos[1]),
+            FIELD_POS_X: pos_x, #!!! ler do ficheiro de posições
+            FIELD_POS_Y: pos_y,
             # Obter timestamp atual
             FIELD_TIMEST:  datetime.timestamp(datetime.now())
         }
@@ -53,7 +58,9 @@ def analyze_connections(): #atualizar as conexoes
 
 #calular no com menor distancia do RSU
 def calculate_dist():
-    dist = 0 #variavel auxiliar para guardar a distancia min atual
+    dist = ((pos_rsu_x-pos_x)**2+(pos_rsu_y-pos_y)**2)**(1/2) #calcualr a distancia do proprio no
+    ipCarAux = IPV6_ADDR
+    #variavel auxiliar para guardar a distancia min atual
     #ipCarAux = "" #variavel auxiliar para guardar o ip do carro com a dist min atual
     for ip_node in cars_connected.keys():
             car = cars_connected.get(ip_node)
@@ -72,7 +79,6 @@ def send_msg(): #envia uma mensagem de 1 em 1 segundo com os seus dados
         next_hop = calculate_dist() #ver qual o vizinho mais proximo do RSU
         if next_hop is not None:
             data = {
-                FIELD_OR: IPV6_ADDR,
                 FIELD_TYPE_MSG: DATA_MSG,
                 FIELD_OR: IPV6_ADDR,
                 FIELD_NEXT_HOP: next_hop, #colocar o ip do next hop que vai encaminhar a mensagem
@@ -80,7 +86,9 @@ def send_msg(): #envia uma mensagem de 1 em 1 segundo com os seus dados
                 FIELD_NAME: NODE_NAME,
                 FIELD_VELOCITY: random.randint(0,100),
                 FIELD_TIMEST: datetime.timestamp(datetime.now()),
-                FIELD_DEST: RSU
+                FIELD_DEST: RSU,
+                FIELD_DEST_X: pos_rsu_x,
+                FIELD_DEST_Y: pos_rsu_y
             }
             data = json.dumps(data)
             # Envia a mensagem para o grupo multicast
@@ -161,15 +169,16 @@ send_conn = threading.Thread(target=send_connection) #enviar mensagens de conex�
 analyze = threading.Thread(target=analyze_connections)
 forward = threading.Thread(target=forward_msg)
 
-receive.start()
-send.start()
-send_conn.start()
-analyze.start()
-forward.start()
+if __name__ == "__main__":
+    receive.start()
+    send.start()
+    send_conn.start()
+    analyze.start()
+    forward.start()
 
-# Aguarda até que ambas as threads terminem
-receive.join()
-send.join()
-send_conn.join()
-analyze.join()
-forward.join()
+    # Aguarda até que ambas as threads terminem
+    receive.join()
+    send.join()
+    send_conn.join()
+    analyze.join()
+    forward.join()

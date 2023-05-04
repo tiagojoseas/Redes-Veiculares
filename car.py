@@ -33,7 +33,10 @@ pos_y = float(pos[1])
 #assim, os vizinhos sabem a sua posicao e tambem sabem que estao conectados
 def send_connection():
     while True:
-        
+        #ler a sua posicao regularmente
+        pos = f_pos.read().split() 
+        pos_x = float(pos[0])
+        pos_y = float(pos[1])
         data = {
             FIELD_TYPE_MSG: CONNECTION_MSG,
             FIELD_POS_X: pos_x, #!!! ler do ficheiro de posições

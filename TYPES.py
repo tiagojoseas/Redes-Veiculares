@@ -1,11 +1,27 @@
 # Tipos de Nós
 RSU = 1
 CAR = 2 
+TRUCK = 3
+MOTORCYCLE = 4
+BUS = 5
 # Campos JSON
-FIELD_TYPE_NODE = "type_node"
+
 FIELD_NAME = "name"
 FIELD_IP = "ip"
+
+#caracteristicas do carro
+FIELD_TYPE_NODE = "type_node"
 FIELD_VELOCITY = "velocity"
+FIELD_WEIGTH = "weigth"
+FIELD_HEIGTH = "heigth"
+FIELD_LENGTH = "lenght"
+FIELD_WIDTH = "width"
+
+#dados dos sensores
+FIELD_RAIN = "rain"
+FIELD_FOG = "fog"
+FIELD_WET_FLOOR = "wet_floor"
+
 FIELD_LAST_CONNECTION = "last_connection"
 FIELD_STATUS_CONNECTION = "status_connection"
 FIELD_TIMESTAMP = "timeStamp"

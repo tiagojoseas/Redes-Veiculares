@@ -10,6 +10,8 @@ sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 
 NODE_NAME = socket.gethostname()
 
+type_node, weigth, heigth, length, width = None
+
 addresses = [i['addr'] for i in ifaddresses("eth0").setdefault(AF_INET6, [{'addr':'No IP addr'}])]
 IPV6_ADDR = addresses[0]
 cars_connected = {} #dicionario para saber quais os carros conectados
@@ -25,6 +27,34 @@ pos_rsu_y = float(pos_rsu[1])
 #abrir o seu ficheiro de posicao
 pos_x = 0 
 pos_y = 0
+
+def initCar(): #inicializar caracteristicas do carro
+    type_node = random.randint(2,5)
+    if type_node == CAR:
+        weigth = 1000
+        heigth = 1.5
+        length = 4.0
+        width = 1.7
+
+    elif type_node == TRUCK:
+        weigth = 10000
+        heigth = 4.0
+        length = 10.0
+        width = 2.5
+
+    elif type_node == MOTORCYCLE:
+        weigth = 250
+        heigth = 1.0
+        length = 1.8
+        width = 0.5
+    elif type_node == BUS:
+        weigth = 1200
+        heigth = 4.0
+        length = 12.0
+        width = 2.5
+        
+
+
 def get_node_location():
     f_pos = open("../"+NODE_NAME+".xy", "r")
     pos = f_pos.read().split() 
@@ -87,9 +117,19 @@ def send_msg(): #envia uma mensagem de 1 em 1 segundo com os seus dados
                 FIELD_TYPE_MSG: DATA_MSG,
                 FIELD_ORIGIN: IPV6_ADDR,
                 FIELD_NEXT_HOP: next_hop, #colocar o ip do next hop que vai encaminhar a mensagem
-                FIELD_TYPE_NODE: CAR,	
+                #caracteristicas do no
                 FIELD_NAME: NODE_NAME,
+                FIELD_TYPE_NODE: type_node,
+                FIELD_WEIGTH: weigth,
+                FIELD_HEIGTH: heigth,
+                FIELD_LENGTH: length,
+                FIELD_WIDTH: width,
+                #sensores
                 FIELD_VELOCITY: random.randint(0,100),
+                FIELD_RAIN: random.randint(0,1),
+                FIELD_FOG: random.randint(0,1),
+                FIELD_WET_FLOOR: random.randint(0,1),
+                
                 FIELD_TIMESTAMP: datetime.timestamp(datetime.now()),
                 FIELD_DEST: RSU,
                 FIELD_DEST_X: pos_rsu_x,
@@ -172,6 +212,7 @@ analyze = threading.Thread(target=analyze_connections, name="Analyze Thread")
 forward = threading.Thread(target=forward_msg, name="Forward Thread")
 
 if __name__ == "__main__":
+    initCar()
     receive.start()
     send.start()
     send_conn.start()

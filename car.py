@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import socket,struct, threading, json, random, time
 from TYPES import *
 from netifaces import ifaddresses, AF_INET6
@@ -10,7 +10,6 @@ sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 
 NODE_NAME = socket.gethostname()
 
-
 addresses = [i['addr'] for i in ifaddresses("eth0").setdefault(AF_INET6, [{'addr':'No IP addr'}])]
 IPV6_ADDR = addresses[0]
 cars_connected = {} #dicionario para saber quais os carros conectados
@@ -18,44 +17,49 @@ cars_connected = {} #dicionario para saber quais os carros conectados
 messages = [] #lista para guardar mensagens para depois reencaminhar
 
 #pegar na localizacao do RSU
-f_rsu = open("n11.xy", "r")
+f_rsu = open("../n11.xy", "r")
 pos_rsu = f_rsu.read().split()
 pos_rsu_x = float(pos_rsu[0])
 pos_rsu_y = float(pos_rsu[1])
 
 #abrir o seu ficheiro de posicao
-f_pos = open(NODE_NAME.join(".xy"), "r")
-pos = f_pos.read().split() 
-pos_x = float(pos[0])
-pos_y = float(pos[1])
+pos_x = 0 
+pos_y = 0
+def get_node_location():
+    f_pos = open("../"+NODE_NAME+".xy", "r")
+    pos = f_pos.read().split() 
+    f_pos.close()
+    pos_y = float(pos[0])
+    pos_y = float(pos[1])
+    return pos_x, pos_y
+
 
 #envia uma mensagem com a sua posicao em multicast para os vizinhos
 #assim, os vizinhos sabem a sua posicao e tambem sabem que estao conectados
 def send_connection():
     while True:
         #ler a sua posicao regularmente
-        pos = f_pos.read().split() 
-        pos_x = float(pos[0])
-        pos_y = float(pos[1])
+        x, y = get_node_location()        
         data = {
+            FIELD_TYPE_NODE: CAR,	
+            FIELD_NAME: NODE_NAME,
             FIELD_TYPE_MSG: CONNECTION_MSG,
-            FIELD_POS_X: pos_x, #!!! ler do ficheiro de posições
-            FIELD_POS_Y: pos_y,
+            FIELD_POS_X: x, #!!! ler do ficheiro de posições
+            FIELD_POS_Y: y,
             # Obter timestamp atual
-            FIELD_TIMEST:  datetime.timestamp(datetime.now())
+            FIELD_TIMESTAMP:  datetime.timestamp(datetime.now())
         }
         data = json.dumps(data)
         # Envia a mensagem para o grupo multicast
         sock.sendto(data.encode(), (mcast_addr, port))
+        #print("Send Connection: "+data)
         time.sleep(0.5)
 
 def analyze_connections(): #atualizar as conexoes
     while True:
-
-        for ip_node in cars_connected.keys():
-            car = cars_connected.get(ip_node)
-        
-            if datetime.timestamp(datetime.now()) - car.get(FIELD_TIMEST) > 0.7:
+        for ip_node in list(cars_connected.keys()).copy():
+            car = cars_connected.get(ip_node)        
+            if datetime.timestamp(datetime.now()) - car.get(FIELD_TIMESTAMP) > 0.7:
                 del cars_connected[ip_node]
         time.sleep(0.2)
 
@@ -75,20 +79,18 @@ def calculate_dist():
     return ipCarAux
 
 
-def send_msg(): #envia uma mensagem de 1 em 1 segundo com os seus dados
-
-    
+def send_msg(): #envia uma mensagem de 1 em 1 segundo com os seus dados    
     while True:
         next_hop = calculate_dist() #ver qual o vizinho mais proximo do RSU
         if next_hop is not None:
             data = {
                 FIELD_TYPE_MSG: DATA_MSG,
-                FIELD_OR: IPV6_ADDR,
+                FIELD_ORIGIN: IPV6_ADDR,
                 FIELD_NEXT_HOP: next_hop, #colocar o ip do next hop que vai encaminhar a mensagem
                 FIELD_TYPE_NODE: CAR,	
                 FIELD_NAME: NODE_NAME,
                 FIELD_VELOCITY: random.randint(0,100),
-                FIELD_TIMEST: datetime.timestamp(datetime.now()),
+                FIELD_TIMESTAMP: datetime.timestamp(datetime.now()),
                 FIELD_DEST: RSU,
                 FIELD_DEST_X: pos_rsu_x,
                 FIELD_DEST_Y: pos_rsu_y
@@ -103,7 +105,7 @@ elas sao enviadas na ordem FIFO, depois de enviada a mensagem e eliminada """
 
 def forward_msg(): #encaminhar mensagens recebidas de outros nos
     while True:
-        if messages.len() > 0:
+        if len(messages) > 0:
             msg = messages[0]
             next_hop = calculate_dist()
             messages.remove(msg)
@@ -141,36 +143,33 @@ def receive_msg():
         data = json.loads(data.decode()) #converter para json
 
         if data[FIELD_TYPE_MSG] == CONNECTION_MSG:
-            
-            # Converter dados para JSON
-            data = json.loads(data.decode())
             # Da lista de endereços obter a primeira posicacao referente ao IPv6
             ip_node = addr[0]
 
             #verificar se a mensagem que recebeu ja n esta desatualizada
-            if data[FIELD_TIMEST] - datetime.timestamp(datetime.now()) < 0.7: 
+            if data[FIELD_TIMESTAMP] - datetime.timestamp(datetime.now()) < 0.7: 
                 # Atualizar/inserir os campos de ultima conexão e de IP
                 data[FIELD_IP] = ip_node
                 
                 # Inserir dados no dicionário
-                cars_connected[ip_node] = data
-        
-        
-
-        elif data[FIELD_TYPE_MSG] == DATA_MSG: 
-            if data[FIELD_NEXT_HOP] == IPV6_ADDR:
+                update_cars_connected(ip_node, data)
+              
+        elif data[FIELD_TYPE_MSG] == DATA_MSG and data[FIELD_NEXT_HOP] == IPV6_ADDR:
                 messages.append(data)
+                show_recv = "["+str(addr[0])+"] "+ data.get(FIELD_NAME)+": "+ str(data.get(FIELD_VELOCITY))+" kmh"
+                print(show_recv)
 
+def update_cars_connected(ip_node, data):
+    #if ip_node in cars_connected.keys():
+    #    cars_connected[ip_node] = cars_connected[ip_node].update(data)
+    #    return
+    cars_connected[ip_node] = data
 
-        #print("From " + str(addr) + ": " + data.decode())
-        show_recv = "["+str(addr[0])+"] "+ data.get(FIELD_NAME)+": "+ str(data.get(FIELD_VELOCITY))+" kmh"
-        print(show_recv)
-
-receive = threading.Thread(target=receive_msg)
-send = threading.Thread(target=send_msg)
-send_conn = threading.Thread(target=send_connection) #enviar mensagens de conexão em multicast
-analyze = threading.Thread(target=analyze_connections)
-forward = threading.Thread(target=forward_msg)
+receive = threading.Thread(target=receive_msg, name="Recived Thread")
+send = threading.Thread(target=send_msg, name="Send Thread")
+send_conn = threading.Thread(target=send_connection, name="Send Conn Thread") #enviar mensagens de conexão em multicast
+analyze = threading.Thread(target=analyze_connections, name="Analyze Thread")
+forward = threading.Thread(target=forward_msg, name="Forward Thread")
 
 if __name__ == "__main__":
     receive.start()

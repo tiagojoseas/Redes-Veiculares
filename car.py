@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import socket,struct, threading, json, random, time
 from TYPES import *
 from netifaces import ifaddresses, AF_INET6

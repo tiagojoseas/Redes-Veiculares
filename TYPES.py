@@ -36,7 +36,7 @@ FIELD_DEST_Y = "y_pos_dest" #posicao do destino eixo y
 
 CONNECTION_MSG = 0 #tipo de mensagem para manter conexão com vizinhos
 DATA_MSG = 1 #tipo de mensagem para enviar dados
-
+ALERT_MSG = 2 #mensagem de alerta
 #Types Status
 STATUS_DISCONNECTED = 0
 STATUS_CONNECTED = 1

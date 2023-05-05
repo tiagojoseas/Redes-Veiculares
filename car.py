@@ -71,7 +71,7 @@ def send_connection():
         #ler a sua posicao regularmente
         x, y = get_node_location()        
         data = {
-            FIELD_TYPE_NODE: CAR,	
+            FIELD_TYPE_NODE: type_node,	
             FIELD_NAME: NODE_NAME,
             FIELD_TYPE_MSG: CONNECTION_MSG,
             FIELD_POS_X: x, #!!! ler do ficheiro de posições

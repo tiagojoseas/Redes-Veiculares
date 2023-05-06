@@ -31,7 +31,7 @@ FIELD_DEST = "destiny"
 FIELD_ORIGIN = "origin"
 FIELD_TYPE_MSG = "type_msg"
 FIELD_NEXT_HOP = "next_hop" #proximo no a receber a mensagem
-FIELD_LAST_HOP = "last_hop" #proximo no a receber a mensagem
+FIELD_LAST_HOP = "last_hop" #no anterior
 FIELD_POS_X = "x_position" #posição no eixo dos x
 FIELD_POS_Y = "y_position" #posição no eixo dos y
 FIELD_DEST_X = "x_pos_dest" #posicao do destino eixo x
@@ -41,6 +41,9 @@ DENM_TYPE = "dem_type"
 COLLISION_RISK = 0 
 TRAFFIC_JAM = 1 
 
+"""
+funcao para construir uma DENM
+"""
 def build_denm(name,origin, dest, next_hop, risk_type):
     msg_denm = {
         FIELD_ORIGIN: origin,

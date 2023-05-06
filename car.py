@@ -59,7 +59,7 @@ def initCar(): #inicializar caracteristicas do carro
         velocity = random.randint(20,50)
         
 
-
+#pegar na localizacao de um no
 def get_node_location(name):
     f_pos = open("../"+name+".xy", "r")
     pos = f_pos.read().split() 
@@ -122,7 +122,7 @@ def send_CAM(): #envia uma mensagem de 1 em 1 segundo com os seus dados
             msg_cam = {
                 FIELD_TYPE_MSG: CAM_MSG,
                 FIELD_ORIGIN: IPV6_ADDR,
-                FIELD_LAST_HOP: IPV6_ADDR,
+                FIELD_LAST_HOP: IPV6_ADDR, #no anterior é ele mesmo
                 FIELD_NEXT_HOP: next_hop, #colocar o ip do next hop que vai encaminhar a mensagem
                 #caracteristicas do no
                 FIELD_NAME: NODE_NAME,
@@ -213,7 +213,7 @@ def receive_msg():
                 update_cars_connected(ip_node, data)
               
         elif data[FIELD_TYPE_MSG] == CAM_MSG and data[FIELD_NEXT_HOP] == IPV6_ADDR:
-                if data[FIELD_ORIGIN] == data[FIELD_NEXT_HOP]:
+                if data[FIELD_ORIGIN] == data[FIELD_NEXT_HOP]: 
                     colision_buffer.append(data)
 
                 data[FIELD_LAST_HOP] == IPV6_ADDR
@@ -232,8 +232,13 @@ def receive_msg():
             elif data[FIELD_NEXT_HOP] == IPV6_ADDR:
                 messages.append(data)
 
+"""
+Esta funcao serve para analisar colisoes iminentes (que vao ocorrer a menos de dois segundos)
+a partir da velocidade dos veiculos, calcula-se o tempo para ocorrer a colisao
+e é enviada uma DENM para o veiculo com que o carro em questao vai colidir
+"""
 
-def analyze_colisions(): #encaminhar mensagens recebidas de outros nos
+def analyze_colisions(): 
     while True:
         if len(colision_buffer) > 0:
             msg = messages[0]

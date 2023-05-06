@@ -10,14 +10,14 @@ sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 
 NODE_NAME = socket.gethostname()
 
-type_node, weigth, heigth, length, width = None
+type_node, weigth, heigth, length, width, velocity = None
 
 addresses = [i['addr'] for i in ifaddresses("eth0").setdefault(AF_INET6, [{'addr':'No IP addr'}])]
 IPV6_ADDR = addresses[0]
 cars_connected = {} #dicionario para saber quais os carros conectados
 
 messages = [] #lista para guardar mensagens para depois reencaminhar
-
+colision_buffer = [] #lista para guardar mensagens para depois reencaminhar
 #pegar na localizacao do RSU
 f_rsu = open("../n11.xy", "r")
 pos_rsu = f_rsu.read().split()
@@ -29,34 +29,39 @@ pos_x = 0
 pos_y = 0
 
 def initCar(): #inicializar caracteristicas do carro
-    type_node = random.randint(2,5)
+    type_node = random.randint(CAR,BUS)
     if type_node == CAR:
         weigth = 1000
         heigth = 1.5
         length = 4.0
         width = 1.7
+        velocity = random.randint(60,100)
 
     elif type_node == TRUCK:
         weigth = 10000
         heigth = 4.0
         length = 10.0
         width = 2.5
+        velocity = random.randint(30,60)
 
     elif type_node == MOTORCYCLE:
         weigth = 250
         heigth = 1.0
         length = 1.8
         width = 0.5
+        velocity = random.randint(30,100)
+
     elif type_node == BUS:
         weigth = 1200
         heigth = 4.0
         length = 12.0
         width = 2.5
+        velocity = random.randint(20,50)
         
 
 
-def get_node_location():
-    f_pos = open("../"+NODE_NAME+".xy", "r")
+def get_node_location(name):
+    f_pos = open("../"+name+".xy", "r")
     pos = f_pos.read().split() 
     f_pos.close()
     pos_y = float(pos[0])
@@ -69,7 +74,7 @@ def get_node_location():
 def send_connection():
     while True:
         #ler a sua posicao regularmente
-        x, y = get_node_location()        
+        x, y = get_node_location(NODE_NAME)        
         data = {
             FIELD_TYPE_NODE: type_node,	
             FIELD_NAME: NODE_NAME,
@@ -93,15 +98,16 @@ def analyze_connections(): #atualizar as conexoes
                 del cars_connected[ip_node]
         time.sleep(0.2)
 
+
 #calular no com menor distancia do RSU
-def calculate_dist():
-    dist = ((pos_rsu_x-pos_x)**2+(pos_rsu_y-pos_y)**2)**(1/2) #calcualr a distancia do proprio no
+def get_netxt_node(node_x, node_y):
+    dist = ((node_x-pos_x)**2+(node_y-pos_y)**2)**(1/2) #calcualr a distancia do proprio no
     ipCarAux = IPV6_ADDR
     #variavel auxiliar para guardar a distancia min atual
     #ipCarAux = "" #variavel auxiliar para guardar o ip do carro com a dist min atual
     for ip_node in cars_connected.keys():
             car = cars_connected.get(ip_node)
-            distAux = ((pos_rsu_x-car.get(FIELD_POS_X))**2+(pos_rsu_y-car.get(FIELD_POS_Y))**2)**(1/2)
+            distAux = ((node_x-car.get(FIELD_POS_X))**2+(node_y-car.get(FIELD_POS_Y))**2)**(1/2)
             if distAux <= dist:
                 ipCarAux = car.get(FIELD_IP)
                 dist = distAux
@@ -109,13 +115,14 @@ def calculate_dist():
     return ipCarAux
 
 
-def send_msg(): #envia uma mensagem de 1 em 1 segundo com os seus dados    
+def send_CAM(): #envia uma mensagem de 1 em 1 segundo com os seus dados    
     while True:
-        next_hop = calculate_dist() #ver qual o vizinho mais proximo do RSU
+        next_hop = get_netxt_node(pos_rsu_x, pos_rsu_y) #ver qual o vizinho mais proximo do RSU
         if next_hop is not None:
-            data = {
-                FIELD_TYPE_MSG: DATA_MSG,
+            msg_cam = {
+                FIELD_TYPE_MSG: CAM_MSG,
                 FIELD_ORIGIN: IPV6_ADDR,
+                FIELD_LAST_HOP: IPV6_ADDR,
                 FIELD_NEXT_HOP: next_hop, #colocar o ip do next hop que vai encaminhar a mensagem
                 #caracteristicas do no
                 FIELD_NAME: NODE_NAME,
@@ -125,7 +132,7 @@ def send_msg(): #envia uma mensagem de 1 em 1 segundo com os seus dados
                 FIELD_LENGTH: length,
                 FIELD_WIDTH: width,
                 #sensores
-                FIELD_VELOCITY: random.randint(0,100),
+                FIELD_VELOCITY: velocity,
                 FIELD_RAIN: random.randint(0,1),
                 FIELD_FOG: random.randint(0,1),
                 FIELD_WET_FLOOR: random.randint(0,1),
@@ -135,9 +142,9 @@ def send_msg(): #envia uma mensagem de 1 em 1 segundo com os seus dados
                 FIELD_DEST_X: pos_rsu_x,
                 FIELD_DEST_Y: pos_rsu_y
             }
-            data = json.dumps(data)
+            msg_cam = json.dumps(msg_cam)
             # Envia a mensagem para o grupo multicast
-            sock.sendto(data.encode(), (mcast_addr, port))
+            sock.sendto(msg_cam.encode(), (mcast_addr, port))
         time.sleep(1)
 
 """ a medida que recebe mensagens para encaminhar, adiciona-as numa lista
@@ -145,9 +152,20 @@ elas sao enviadas na ordem FIFO, depois de enviada a mensagem e eliminada """
 
 def forward_msg(): #encaminhar mensagens recebidas de outros nos
     while True:
+        # verificar as DENM
+        denm_arr=[]
+        denm_arr = messages[messages[FIELD_TYPE_MSG]== DENM_MSG] 
+        for denm in denm_arr:
+            next_hop = get_netxt_node()
+            messages.remove(denm)
+            denm[FIELD_NEXT_HOP] = next_hop
+            msg_denm = json.dumps(denm)
+            sock.sendto(msg_denm.encode(), (mcast_addr, port))
+            
+        # verificar as CAM
         if len(messages) > 0:
             msg = messages[0]
-            next_hop = calculate_dist()
+            next_hop = get_netxt_node(pos_rsu_x, pos_rsu_y)
             messages.remove(msg)
             msg[FIELD_NEXT_HOP] = next_hop
 
@@ -194,10 +212,42 @@ def receive_msg():
                 # Inserir dados no dicionário
                 update_cars_connected(ip_node, data)
               
-        elif data[FIELD_TYPE_MSG] == DATA_MSG and data[FIELD_NEXT_HOP] == IPV6_ADDR:
+        elif data[FIELD_TYPE_MSG] == CAM_MSG and data[FIELD_NEXT_HOP] == IPV6_ADDR:
+                if data[FIELD_ORIGIN] == data[FIELD_NEXT_HOP]:
+                    colision_buffer.append(data)
+
+                data[FIELD_LAST_HOP] == IPV6_ADDR
                 messages.append(data)
                 show_recv = "["+str(addr[0])+"] "+ data.get(FIELD_NAME)+": "+ str(data.get(FIELD_VELOCITY))+" kmh"
                 print(show_recv)
+        
+        elif data[FIELD_TYPE_MSG] == DENM_MSG:
+            if data[FIELD_DEST] == IPV6_ADDR: 
+                log_msg = "[DENM] "
+                if data[DENM_TYPE] == COLLISION_RISK:
+                    log_msg += "COLLISION_RISK with "+data[NODE_NAME] 
+                if data[DENM_TYPE] == TRAFFIC_JAM:
+                    log_msg += "COLLISION_RISK with "+data[NODE_NAME] 
+                print(log_msg)
+            elif data[FIELD_NEXT_HOP] == IPV6_ADDR:
+                messages.append(data)
+
+
+def analyze_colisions(): #encaminhar mensagens recebidas de outros nos
+    while True:
+        if len(colision_buffer) > 0:
+            msg = messages[0]
+            messages.remove(msg)
+
+            node_x = msg[FIELD_POS_X] 
+            node_y = msg[FIELD_POS_Y] 
+            x, y = get_node_location(NODE_NAME) 
+            total_velocity = (msg[FIELD_VELOCITY]+velocity)/3,6
+            dist = ((node_x-pos_x)**2+(node_y-pos_y)**2)**(1/2) #calcualr a distancia do proprio no
+            time = dist/total_velocity
+            if time > 2:
+                msg_denm = build_denm(IPV6_ADDR,msg[FIELD_ORIGIN],msg[FIELD_ORIGIN],COLLISION_RISK)
+                sock.sendto(msg_denm.encode(), (mcast_addr, port))
 
 def update_cars_connected(ip_node, data):
     #if ip_node in cars_connected.keys():
@@ -206,9 +256,10 @@ def update_cars_connected(ip_node, data):
     cars_connected[ip_node] = data
 
 receive = threading.Thread(target=receive_msg, name="Recived Thread")
-send = threading.Thread(target=send_msg, name="Send Thread")
+send = threading.Thread(target=send_CAM, name="Send Thread")
 send_conn = threading.Thread(target=send_connection, name="Send Conn Thread") #enviar mensagens de conexão em multicast
 analyze = threading.Thread(target=analyze_connections, name="Analyze Thread")
+analyze_col = threading.Thread(target=analyze_colisions, name="Analyze Collions Thread")
 forward = threading.Thread(target=forward_msg, name="Forward Thread")
 
 if __name__ == "__main__":
@@ -216,6 +267,7 @@ if __name__ == "__main__":
     receive.start()
     send.start()
     send_conn.start()
+    analyze_col.start()
     analyze.start()
     forward.start()
 
@@ -223,5 +275,6 @@ if __name__ == "__main__":
     receive.join()
     send.join()
     send_conn.join()
+    analyze_col.join()
     analyze.join()
     forward.join()

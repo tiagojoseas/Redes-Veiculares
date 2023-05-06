@@ -1,3 +1,5 @@
+import json
+
 # Tipos de Nós
 RSU = 1
 CAR = 2 
@@ -29,14 +31,32 @@ FIELD_DEST = "destiny"
 FIELD_ORIGIN = "origin"
 FIELD_TYPE_MSG = "type_msg"
 FIELD_NEXT_HOP = "next_hop" #proximo no a receber a mensagem
+FIELD_LAST_HOP = "last_hop" #proximo no a receber a mensagem
 FIELD_POS_X = "x_position" #posição no eixo dos x
 FIELD_POS_Y = "y_position" #posição no eixo dos y
 FIELD_DEST_X = "x_pos_dest" #posicao do destino eixo x
 FIELD_DEST_Y = "y_pos_dest" #posicao do destino eixo y
 
+DENM_TYPE = "dem_type"
+COLLISION_RISK = 0 
+TRAFFIC_JAM = 1 
+
+def build_denm(name,origin, dest, next_hop, risk_type):
+    msg_denm = {
+        FIELD_ORIGIN: origin,
+        FIELD_DEST: dest,
+        FIELD_NEXT_HOP: next_hop,
+        FIELD_NAME: name,
+        FIELD_TYPE_MSG: DENM_MSG, 
+        DENM_TYPE: risk_type
+    }
+
+    return json.dumps(msg_denm)
+
+
 CONNECTION_MSG = 0 #tipo de mensagem para manter conexão com vizinhos
-DATA_MSG = 1 #tipo de mensagem para enviar dados
-ALERT_MSG = 2 #mensagem de alerta
+CAM_MSG = 1 #tipo de mensagem para enviar dados
+DENM_MSG = 2 #mensagem de alerta
 #Types Status
 STATUS_DISCONNECTED = 0
 STATUS_CONNECTED = 1

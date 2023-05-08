@@ -78,6 +78,7 @@ def send_connection():
         data = {
             FIELD_TYPE_NODE: type_node,	
             FIELD_NAME: NODE_NAME,
+            FIELD_ORIGIN: IPV6_ADDR,
             FIELD_TYPE_MSG: CONNECTION_MSG,
             FIELD_POS_X: x, #!!! ler do ficheiro de posições
             FIELD_POS_Y: y,
@@ -202,12 +203,11 @@ def receive_msg():
 
         if data[FIELD_TYPE_MSG] == CONNECTION_MSG:
             # Da lista de endereços obter a primeira posicacao referente ao IPv6
-            ip_node = addr[0]
+            ip_node = data[FIELD_ORIGIN]
 
             #verificar se a mensagem que recebeu ja n esta desatualizada
             if data[FIELD_TIMESTAMP] - datetime.timestamp(datetime.now()) < 0.7: 
                 # Atualizar/inserir os campos de ultima conexão e de IP
-                data[FIELD_IP] = ip_node
                 
                 # Inserir dados no dicionário
                 update_cars_connected(ip_node, data)

@@ -77,7 +77,6 @@ def send_connection():
         x, y = get_node_location(NODE_NAME)        
         data = {
             FIELD_TYPE_NODE: type_node,	
-            FIELD_NAME: NODE_NAME,
             FIELD_ORIGIN: IPV6_ADDR,
             FIELD_TYPE_MSG: CONNECTION_MSG,
             FIELD_POS_X: x, #!!! ler do ficheiro de posições
@@ -212,14 +211,14 @@ def receive_msg():
                 # Inserir dados no dicionário
                 update_cars_connected(ip_node, data)
               
-        elif data[FIELD_TYPE_MSG] == CAM_MSG and data[FIELD_NEXT_HOP] == IPV6_ADDR:
+        elif data[FIELD_TYPE_MSG] == CAM_MSG:
                 if data[FIELD_ORIGIN] == data[FIELD_NEXT_HOP]: 
                     colision_buffer.append(data)
-
-                data[FIELD_LAST_HOP] == IPV6_ADDR
-                messages.append(data)
-                show_recv = "["+str(addr[0])+"] "+ data.get(FIELD_NAME)+": "+ str(data.get(FIELD_VELOCITY))+" kmh"
-                print(show_recv)
+                if data[FIELD_NEXT_HOP] == IPV6_ADDR:
+                    data[FIELD_LAST_HOP] == IPV6_ADDR
+                    messages.append(data)
+                    show_recv = "["+str(addr[0])+"] "+ data.get(FIELD_NAME)+": "+ str(data.get(FIELD_VELOCITY))+" kmh"
+                    print(show_recv)
         
         elif data[FIELD_TYPE_MSG] == DENM_MSG:
             if data[FIELD_DEST] == IPV6_ADDR: 
@@ -241,14 +240,14 @@ e é enviada uma DENM para o veiculo com que o carro em questao vai colidir
 def analyze_colisions(): 
     while True:
         if len(colision_buffer) > 0:
-            msg = messages[0]
-            messages.remove(msg)
+            msg = colision_buffer[0]
+            colision_buffer.remove(msg)
 
             node_x = msg[FIELD_POS_X] 
             node_y = msg[FIELD_POS_Y] 
             x, y = get_node_location(NODE_NAME) 
             total_velocity = (msg[FIELD_VELOCITY]+velocity)/3,6
-            dist = ((node_x-pos_x)**2+(node_y-pos_y)**2)**(1/2) #calcualr a distancia do proprio no
+            dist = ((node_x-x)**2+(node_y-y)**2)**(1/2) #calcualr a distancia entre nos
             time = dist/total_velocity
             if time > 2:
                 msg_denm = build_denm(IPV6_ADDR,msg[FIELD_ORIGIN],msg[FIELD_ORIGIN],COLLISION_RISK)

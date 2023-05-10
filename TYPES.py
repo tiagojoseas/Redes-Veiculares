@@ -11,6 +11,11 @@ BUS = 5
 FIELD_NAME = "name"
 FIELD_IP = "ip"
 
+FIELD_EPICENTER_X = "epicenter_x"
+FIELD_EPICENTER_Y = "epicenter_y"
+FIELD_RADIUS_S = "small_radius"
+FIELD_RADIUS_B = "big_radius"
+
 #caracteristicas do carro
 FIELD_TYPE_NODE = "type_node"
 FIELD_VELOCITY = "velocity"

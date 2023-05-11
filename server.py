@@ -17,8 +17,8 @@ def start_server(server_address, server_port):
     sock.bind((server_address, server_port))
     while True:
         # Receive data and client address
-        data = sock.recvfrom(1024)
-        data = json.loads(data)
+        data, addr = sock.recvfrom(1024)
+        data = json.loads(data.decode())
         dicionario[data[FIELD_IP]] = data
         denm_array = []
         for ip1 in dicionario:
@@ -53,11 +53,7 @@ def start_server(server_address, server_port):
                         }
                     denm_array.append(msg_denm)
                     sock.sendto(msg_denm.encode(), (rsu_address, rsu_port))
-
-                        
-
-
-        print(data[FIELD_NAME])
+                    print(">  TRAFFIC_JAM")
 
 server_address = "2001:690:2280:820::3" 
 server_port = 9999 

@@ -22,7 +22,7 @@ sock_server.bind((local_address, 12345))
 cars_connected = {}
 last_status = {}
 
-def send_msg():    
+def print_data():    
     while True:
         # Lê a mensagem a ser enviada do usuário
         input("Prima enter para mostrar os dados\n")
@@ -30,18 +30,15 @@ def send_msg():
         cars_connected_cp = cars_connected.copy()
         for ip_node in cars_connected_cp.keys():
             car = cars_connected_cp.get(ip_node)
-            """
             status = car.get(FIELD_STATUS_CONNECTION)
             show_recv = "["+str(ip_node)+"] " 
-            show_recv += car.get(FIELD_NAME)+" - "+ str(car.get(FIELD_VELOCITY))+" kmh"
+            show_recv += car.get(FIELD_NAME)+" - "#+ str(car.get(FIELD_VELOCITY))+" kmh"
             show_recv += "("+str(car.get(FIELD_LAST_CONNECTION))+") -> "
             show_recv += "DISCONNECTED" if status==0 else "CONNECTED"
-            """
             
-            print(car)
+            print(show_recv)
         print("-"*50)
         # Envia a mensagem para o grupo multicast
-        #sock_v.sendto(message.encode(), (mcast_addr, port))
 
 def analyze_connections():
     while True:
@@ -68,7 +65,7 @@ def analyze_connections():
         #sock_v.sendto(message.encode(), (mcast_addr, port))
 
 
-def receive_msg():
+def receive_msg_from_cars():
     
     # Set the multicast group address and interface index
     iface_index = 0
@@ -99,21 +96,85 @@ def receive_msg():
         # Inserir dados no dicionário
         update_cars_connected(ip_node, data)
         sock_server.sendto(json.dumps(data).encode(), (server_address, server_port))
-        
+
+def receive_msg_from_cars():
+    
+    # Set the multicast group address and interface index
+    iface_index = 0
+
+    # Construct the group address tuple
+    mcast_group = socket.inet_pton(socket.AF_INET6, mcast_addr)
+    mcast_if = struct.pack('@I', iface_index)
+    mcast_group_tuple = mcast_group + mcast_if
+
+    # Join the multicast group
+    sock_v.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mcast_group_tuple)
+  
+    while True:
+        # Obter dado e endereco
+        data, addr = sock_v.recvfrom(1024)
+        # Obter timestamp atual
+        time_rc = datetime.timestamp(datetime.now())
+        # Converter dados para JSON
+        data = json.loads(data.decode())
+        # Da lista de endereços obter a primeira posicao referente ao IPv6
+        ip_node = addr[0]
+
+        # Atualizar/inserir os campos de ultima conexão e de IP
+        data[FIELD_IP] = ip_node
+        data[FIELD_LAST_CONNECTION] = time_rc
+        data[FIELD_STATUS_CONNECTION] = STATUS_CONNECTED
+
+        # Inserir dados no dicionário
+        update_cars_connected(ip_node, data)
+        sock_server.sendto(json.dumps(data).encode(), (server_address, server_port))
+
+def receive_msg_from_server():
+    
+    # Set the multicast group address and interface index
+    iface_index = 0
+
+    # Construct the group address tuple
+    mcast_group = socket.inet_pton(socket.AF_INET6, mcast_addr)
+    mcast_if = struct.pack('@I', iface_index)
+    mcast_group_tuple = mcast_group + mcast_if
+
+    # Join the multicast group
+    sock_v.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mcast_group_tuple)
+  
+    while True:
+        # Obter dado e endereco
+        data, addr = sock_v.recvfrom(1024)
+        # Obter timestamp atual
+        time_rc = datetime.timestamp(datetime.now())
+        # Converter dados para JSON
+        data = json.loads(data.decode())
+        # Da lista de endereços obter a primeira posicao referente ao IPv6
+        ip_node = addr[0]
+
+        # Atualizar/inserir os campos de ultima conexão e de IP
+        data[FIELD_IP] = ip_node
+        data[FIELD_LAST_CONNECTION] = time_rc
+        data[FIELD_STATUS_CONNECTION] = STATUS_CONNECTED
+
+        # Inserir dados no dicionário
+        update_cars_connected(ip_node, data)
+        sock_server.sendto(json.dumps(data).encode(), (server_address, server_port))
                
 def update_cars_connected(ip_node, data):   
     cars_connected[ip_node] = data
 
 if __name__ == "__main__":
-    send = threading.Thread(target=send_msg, name="Send Thread")
+    print_th = threading.Thread(target=print_data, name="Send Thread")
     analyze = threading.Thread(target=analyze_connections, name="Analyze Thread")
-    receive = threading.Thread(target=receive_msg, name="Recived Thread")
+    receive_from_cars = threading.Thread(target=receive_msg_from_cars, name="Recived Cars Thread")
+    receive_from_server = threading.Thread(target=receive_msg_from_server, name="Recived Server Thread")
 
-    send.start()
+    print_th.start()
     analyze.start()
-    receive.start()
+    receive_from_cars.start()
 
     # Aguarda até que ambas as threads terminem
-    send.join()
+    print_th.join()
     analyze.join()
-    receive.join()
+    receive_from_cars.join()

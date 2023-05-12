@@ -19,6 +19,7 @@ def start_server(server_address, server_port):
         # Receive data and client address
         data, addr = sock.recvfrom(1024)
         data = json.loads(data.decode())
+        print(data[FIELD_NAME], data[FIELD_IP],data[FIELD_ORIGIN])
         dicionario[data[FIELD_IP]] = data
         denm_array = []
         for ip1 in dicionario:

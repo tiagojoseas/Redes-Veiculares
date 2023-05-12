@@ -51,10 +51,10 @@ funcao para construir uma DENM
 """
 def build_denm(name,origin, dest, next_hop, risk_type):
     msg_denm = {
+        FIELD_NAME: name,
         FIELD_ORIGIN: origin,
         FIELD_DEST: dest,
         FIELD_NEXT_HOP: next_hop,
-        FIELD_NAME: name,
         FIELD_TYPE_MSG: DENM_MSG, 
         DENM_TYPE: risk_type
     }

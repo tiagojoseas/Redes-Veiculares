@@ -95,6 +95,7 @@ def receive_msg_from_cars():
 
         # Inserir dados no dicionário
         update_cars_connected(ip_node, data)
+        print(data[FIELD_NAME])
         sock_server.sendto(json.dumps(data).encode(), (server_address, server_port))
 
 def receive_msg_from_cars():
@@ -127,7 +128,7 @@ def receive_msg_from_cars():
 
         # Inserir dados no dicionário
         update_cars_connected(ip_node, data)
-        sock_server.sendto(json.dumps(data).encode(), (server_address, server_port))
+        if data[FIELD_TYPE_MSG] == CAM_MSG: sock_server.sendto(json.dumps(data).encode(), (server_address, server_port))
 
 def receive_msg_from_server():
     
@@ -158,11 +159,11 @@ def receive_msg_from_server():
         data[FIELD_STATUS_CONNECTION] = STATUS_CONNECTED
 
         # Inserir dados no dicionário
-        update_cars_connected(ip_node, data)
+        update_cars_connected(data)
         sock_server.sendto(json.dumps(data).encode(), (server_address, server_port))
                
 def update_cars_connected(ip_node, data):   
-    cars_connected[ip_node] = data
+    cars_connected[data[FIELD_ORIGIN]] = data
 
 if __name__ == "__main__":
     print_th = threading.Thread(target=print_data, name="Send Thread")

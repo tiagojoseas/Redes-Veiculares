@@ -5,8 +5,6 @@ from TYPES import *
 mcast_addr = 'ff05::4'
 port = 3000
 
-server_address = "2001:690:2280:820::3" 
-server_port = 9999 
 
 # Create a sockets
 # Bind the socket to an address and port
@@ -16,7 +14,9 @@ sock_v.bind(('::', port))
 # Bind the socket to a local address and port
 sock_server = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 local_address = "2001:690:2280:820::2"  # Use any available IPv6 address on the local machine
-sock_server.bind((local_address, 12345))
+server_address = "2001:690:2280:820::3" 
+server_rsu_port = 9999 
+sock_server.bind((local_address, server_rsu_port))
 
 
 cars_connected = {}
@@ -64,7 +64,6 @@ def analyze_connections():
         # Envia a mensagem para o grupo multicast
         #sock_v.sendto(message.encode(), (mcast_addr, port))
 
-
 def receive_msg_from_cars():
     
     # Set the multicast group address and interface index
@@ -95,72 +94,15 @@ def receive_msg_from_cars():
 
         # Inserir dados no dicionário
         update_cars_connected(ip_node, data)
-        print(data[FIELD_NAME])
-        sock_server.sendto(json.dumps(data).encode(), (server_address, server_port))
+        if data[FIELD_TYPE_MSG]!= DENM_MSG:
+            sock_server.sendto(json.dumps(data).encode(), (server_address, server_port))
 
-def receive_msg_from_cars():
-    
-    # Set the multicast group address and interface index
-    iface_index = 0
-
-    # Construct the group address tuple
-    mcast_group = socket.inet_pton(socket.AF_INET6, mcast_addr)
-    mcast_if = struct.pack('@I', iface_index)
-    mcast_group_tuple = mcast_group + mcast_if
-
-    # Join the multicast group
-    sock_v.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mcast_group_tuple)
-  
-    while True:
-        # Obter dado e endereco
-        data, addr = sock_v.recvfrom(1024)
-        # Obter timestamp atual
-        time_rc = datetime.timestamp(datetime.now())
-        # Converter dados para JSON
-        data = json.loads(data.decode())
-        # Da lista de endereços obter a primeira posicao referente ao IPv6
-        ip_node = addr[0]
-
-        # Atualizar/inserir os campos de ultima conexão e de IP
-        data[FIELD_IP] = ip_node
-        data[FIELD_LAST_CONNECTION] = time_rc
-        data[FIELD_STATUS_CONNECTION] = STATUS_CONNECTED
-
-        # Inserir dados no dicionário
-        update_cars_connected(ip_node, data)
-        if data[FIELD_TYPE_MSG] == CAM_MSG: sock_server.sendto(json.dumps(data).encode(), (server_address, server_port))
 
 def receive_msg_from_server():
-    
-    # Set the multicast group address and interface index
-    iface_index = 0
-
-    # Construct the group address tuple
-    mcast_group = socket.inet_pton(socket.AF_INET6, mcast_addr)
-    mcast_if = struct.pack('@I', iface_index)
-    mcast_group_tuple = mcast_group + mcast_if
-
-    # Join the multicast group
-    sock_v.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mcast_group_tuple)
-  
     while True:
         # Obter dado e endereco
         data, addr = sock_v.recvfrom(1024)
-        # Obter timestamp atual
-        time_rc = datetime.timestamp(datetime.now())
-        # Converter dados para JSON
-        data = json.loads(data.decode())
-        # Da lista de endereços obter a primeira posicao referente ao IPv6
-        ip_node = addr[0]
-
-        # Atualizar/inserir os campos de ultima conexão e de IP
-        data[FIELD_IP] = ip_node
-        data[FIELD_LAST_CONNECTION] = time_rc
-        data[FIELD_STATUS_CONNECTION] = STATUS_CONNECTED
-
-        # Inserir dados no dicionário
-        update_cars_connected(data)
-        sock_server.sendto(json.dumps(data).encode(), (server_address, server_port))
+        print("SERVER: ",data)
                
 def update_cars_connected(ip_node, data):   
     cars_connected[data[FIELD_ORIGIN]] = data

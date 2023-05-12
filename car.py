@@ -25,7 +25,7 @@ messages = [] #lista para guardar mensagens para depois reencaminhar
 colision_buffer = [] #lista para guardar mensagens para depois reencaminhar
 #pegar na localizacao do RSU
 f_rsu = open("../n11.xy", "r")
-pos_rsu = f_rsu.read().split()
+pos_rsu = f_rsu.read().split(" ")
 pos_rsu_x = float(pos_rsu[0])
 pos_rsu_y = float(pos_rsu[1])
 

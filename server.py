@@ -45,7 +45,7 @@ def start_server(server_address, server_port):
             if count_cars >= MAX_CARS:
                 discard = False
                 for demn in denm_array:
-                    if datetime.now()-demn[FIELD_TIMESTAMP]<60 and (((demn[FIELD_EPICENTER_X]-x1)**2+(demn[FIELD_EPICENTER_Y]-y1)**2)**(1/2)) < (2*R/3):
+                    if datetime.timestamp(datetime.now())-demn[FIELD_TIMESTAMP] < 60*1000 and (((demn[FIELD_EPICENTER_X]-x1)**2+(demn[FIELD_EPICENTER_Y]-y1)**2)**(1/2)) < (2*R/3):
                         discard = True
                         print("Discard")
                         break
@@ -60,12 +60,11 @@ def start_server(server_address, server_port):
                         FIELD_NAME: "servidor",
                         FIELD_TYPE_MSG: DENM_MSG, 
                         DENM_TYPE: TRAFFIC_JAM,
-                        FIELD_TIMESTAMP: datetime.now()
+                        FIELD_TIMESTAMP: datetime.timestamp(datetime.now())
                         }
-                    msg_denm = json.dumps(msg_denm)
+                    print("> TRAFFIC_JAM",dicionario[ip1][FIELD_NAME],x1, y1, count_cars)
+                    sock.sendto(json.dumps(msg_denm).encode(), (rsu_address, rsu_port))
                     denm_array.append(msg_denm)
-                    sock.sendto(msg_denm.encode(), (rsu_address, rsu_port))
-                    print(">  TRAFFIC_JAM",ip1, count_cars)
 
 
 start_server(server_address, server_port)

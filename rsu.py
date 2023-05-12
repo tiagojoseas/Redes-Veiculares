@@ -95,14 +95,18 @@ def receive_msg_from_cars():
         # Inserir dados no dicionário
         update_cars_connected(ip_node, data)
         if data[FIELD_TYPE_MSG]!= DENM_MSG:
-            sock_server.sendto(json.dumps(data).encode(), (server_address, server_port))
+            sock_server.sendto(json.dumps(data).encode(), (server_address, server_rsu_port))
 
 
 def receive_msg_from_server():
     while True:
         # Obter dado e endereco
-        data, addr = sock_v.recvfrom(1024)
-        print("SERVER: ",data)
+        data, addr = sock_server.recvfrom(1024)
+        data = json.loads(data)
+        print(">  SERVER: ", data[FIELD_TYPE_MSG],data[DENM_TYPE])
+        if data[FIELD_TYPE_MSG] == DENM_MSG:
+            if data[DENM_TYPE] == TRAFFIC_JAM:
+                print(">  TRAFFIC_JAM: ",data[FIELD_EPICENTER_X], data[FIELD_EPICENTER_Y])
                
 def update_cars_connected(ip_node, data):   
     cars_connected[data[FIELD_ORIGIN]] = data
@@ -116,8 +120,10 @@ if __name__ == "__main__":
     print_th.start()
     analyze.start()
     receive_from_cars.start()
+    receive_from_server.start()
 
     # Aguarda até que ambas as threads terminem
     print_th.join()
     analyze.join()
     receive_from_cars.join()
+    receive_from_server.join()

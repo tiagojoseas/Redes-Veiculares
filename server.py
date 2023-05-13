@@ -10,7 +10,7 @@ server_port = 9999
 
 R = 100 #15 pixeis = 10 metros
 MAX_CARS = 3
-dicionario = {}
+data_storage = {}
 
 def start_server(server_address, server_port):
     # Create an IPv6 socket
@@ -24,24 +24,26 @@ def start_server(server_address, server_port):
         data = json.loads(data.decode())
 
         try:
-            dicionario[data[FIELD_ORIGIN]]
+            data_storage[data[FIELD_ORIGIN]]
         except: 
             print(">> New ",data[FIELD_ORIGIN])
 
-        dicionario[data[FIELD_ORIGIN]] = data
+        data_storage[data[FIELD_ORIGIN]] = data
 
         denm_array = []
-        for ip1 in dicionario:
+        for ip1 in data_storage:
             count_cars = 0
-            x1 = dicionario[ip1][FIELD_POS_X]
-            y1 = dicionario[ip1][FIELD_POS_Y]
-            for ip2 in dicionario:
+            x1 = data_storage[ip1][FIELD_POS_X]
+            y1 = data_storage[ip1][FIELD_POS_Y]
+
+            for ip2 in data_storage:    #conta o numero de carro a uma distancia < que R do ip1
                 if ip1 != ip2:
-                    x2 = dicionario[ip2][FIELD_POS_X]
-                    y2 = dicionario[ip2][FIELD_POS_Y]
+                    x2 = data_storage[ip2][FIELD_POS_X]
+                    y2 = data_storage[ip2][FIELD_POS_Y]
                     dist = ((x2-x1)**2+(y2-y1)**2)**(1/2)
                     if dist < R:
                         count_cars+=1
+
             if count_cars >= MAX_CARS:
                 discard = False
                 for demn in denm_array:
@@ -62,7 +64,7 @@ def start_server(server_address, server_port):
                         DENM_TYPE: TRAFFIC_JAM,
                         FIELD_TIMESTAMP: datetime.timestamp(datetime.now())
                         }
-                    print("> TRAFFIC_JAM",dicionario[ip1][FIELD_NAME],x1, y1, count_cars)
+                    print("> TRAFFIC_JAM",data_storage[ip1][FIELD_NAME],x1, y1, count_cars)
                     sock.sendto(json.dumps(msg_denm).encode(), (rsu_address, rsu_port))
                     denm_array.append(msg_denm)
 

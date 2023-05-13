@@ -46,20 +46,7 @@ DENM_TYPE = "dem_type"
 COLLISION_RISK = 0 
 TRAFFIC_JAM = 1 
 
-"""
-funcao para construir uma DENM
-"""
-def build_denm(name,origin, dest, next_hop, risk_type):
-    msg_denm = {
-        FIELD_NAME: name,
-        FIELD_ORIGIN: origin,
-        FIELD_DEST: dest,
-        FIELD_NEXT_HOP: next_hop,
-        FIELD_TYPE_MSG: DENM_MSG, 
-        DENM_TYPE: risk_type
-    }
 
-    return json.dumps(msg_denm)
 
 
 CONNECTION_MSG = 0 #tipo de mensagem para manter conexão com vizinhos

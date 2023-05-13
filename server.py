@@ -8,7 +8,7 @@ rsu_port = 9999
 server_address = "2001:690:2280:820::3" 
 server_port = 9999 
 
-R = 100 #15 pixeis = 10 metros
+R = 160 #15 pixeis = 10 metros
 MAX_CARS = 3
 data_storage = {}
 
@@ -26,7 +26,7 @@ def start_server(server_address, server_port):
         try:
             data_storage[data[FIELD_ORIGIN]]
         except: 
-            print(">> New ",data[FIELD_ORIGIN])
+            print("SERVER >> New car:",data[FIELD_NAME])
 
         data_storage[data[FIELD_ORIGIN]] = data
 
@@ -47,9 +47,8 @@ def start_server(server_address, server_port):
             if count_cars >= MAX_CARS:
                 discard = False
                 for demn in denm_array:
-                    if datetime.timestamp(datetime.now())-demn[FIELD_TIMESTAMP] < 60*1000 and (((demn[FIELD_EPICENTER_X]-x1)**2+(demn[FIELD_EPICENTER_Y]-y1)**2)**(1/2)) < (2*R/3):
+                    if datetime.timestamp(datetime.now())-demn[FIELD_TIMESTAMP] < 60 and (((demn[FIELD_EPICENTER_X]-x1)**2+(demn[FIELD_EPICENTER_Y]-y1)**2)**(1/2)) < (2*R/3):
                         discard = True
-                        print("Discard")
                         break
                 if not discard:
                     msg_denm = {
@@ -59,12 +58,12 @@ def start_server(server_address, server_port):
                         FIELD_EPICENTER_Y: y1,
                         FIELD_RADIUS_S : R,
                         FIELD_RADIUS_B : 3*R,
-                        FIELD_NAME: "servidor",
+                        FIELD_NAME: "serverfire",
                         FIELD_TYPE_MSG: DENM_MSG, 
                         DENM_TYPE: TRAFFIC_JAM,
                         FIELD_TIMESTAMP: datetime.timestamp(datetime.now())
                         }
-                    print("> TRAFFIC_JAM",data_storage[ip1][FIELD_NAME],x1, y1, count_cars)
+                    print("SERVER >> TRAFFIC_JAM",data_storage[ip1][FIELD_NAME],x1, y1,datetime.now())
                     sock.sendto(json.dumps(msg_denm).encode(), (rsu_address, rsu_port))
                     denm_array.append(msg_denm)
 

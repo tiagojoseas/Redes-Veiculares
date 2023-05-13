@@ -72,7 +72,7 @@ def get_node_location(name):
     f_pos = open("../"+name+".xy", "r")
     pos = f_pos.read().split(" ") 
     f_pos.close()
-    pos_y = float(pos[0])
+    pos_x = float(pos[0])
     pos_y = float(pos[1])
     return pos_x, pos_y
 
@@ -82,7 +82,7 @@ def get_node_location(name):
 def send_connection():
     while True:
         #ler a sua posicao regularmente
-        x, y = get_node_location(NODE_NAME)        
+        x, y = get_node_location(NODE_NAME)  
         data = {
             FIELD_TYPE_NODE: type_node,	
             FIELD_IP: IPV6_ADDR,
@@ -110,7 +110,7 @@ def analyze_connections(): #atualizar as conexoes
 
 
 #calular no com menor distancia do RSU
-def get_netxt_node(node_x, node_y):
+def get_next_node(node_x, node_y):
     dist = ((node_x-pos_x)**2+(node_y-pos_y)**2)**(1/2) #calcualr a distancia do proprio no
     ipCarAux = IPV6_ADDR
     #variavel auxiliar para guardar a distancia min atual
@@ -127,7 +127,7 @@ def get_netxt_node(node_x, node_y):
 
 def send_CAM(): #envia uma mensagem de 1 em 1 segundo com os seus dados    
     while True:
-        next_hop = get_netxt_node(pos_rsu_x, pos_rsu_y) #ver qual o vizinho mais proximo do RSU
+        next_hop = get_next_node(pos_rsu_x, pos_rsu_y) #ver qual o vizinho mais proximo do RSU
         if next_hop is not None:
             x, y = get_node_location(NODE_NAME)  
             msg_cam = {
@@ -173,7 +173,7 @@ def forward_msg(): #encaminhar mensagens recebidas de outros nos
                 denm_arr.append(msg)
 
         for denm in denm_arr:
-            next_hop = get_netxt_node()
+            next_hop = get_next_node()
             messages.remove(denm)
             denm[FIELD_NEXT_HOP] = next_hop
             msg_denm = json.dumps(denm)
@@ -182,7 +182,7 @@ def forward_msg(): #encaminhar mensagens recebidas de outros nos
         # verificar as CAM
         if len(messages) > 0:
             msg = messages[0]
-            next_hop = get_netxt_node(pos_rsu_x, pos_rsu_y)
+            next_hop = get_next_node(pos_rsu_x, pos_rsu_y)
             msg[FIELD_NEXT_HOP] = next_hop
             msg = json.dumps(msg)
             sock.sendto(msg.encode(), (mcast_addr, port))
@@ -232,31 +232,32 @@ def receive_msg():
                     data[FIELD_LAST_HOP] == IPV6_ADDR
                     messages.append(data)
                     if addr[0] != IPV6_ADDR: 
-                        show_recv = "[CAM] "+ data[FIELD_NAME]+" :" + str(data.get(FIELD_VELOCITY))+" kmh"
-                        next_hop = get_netxt_node(pos_rsu_x, pos_rsu_y)
+                        show_recv = "[CAM] << "+ data[FIELD_NAME]+" :" + str(data.get(FIELD_VELOCITY))+" kmh"
+                        next_hop = get_next_node(pos_rsu_x, pos_rsu_y)
                         data[FIELD_NEXT_HOP] = next_hop
 
                         data = json.dumps(data)
                         sock.sendto(data.encode(), (mcast_addr, port))
         
         elif data[FIELD_TYPE_MSG] == DENM_MSG:
-            if data[FIELD_DEST] == IPV6_ADDR: 
-                log_msg = "[DENM] "
-                if data[DENM_TYPE] == COLLISION_RISK:
-                    log_msg += "COLLISION_RISK with "+data[FIELD_NAME] 
                 if data[DENM_TYPE] == TRAFFIC_JAM:
-                    log_msg += "TRAFFIC_JAM with "+data[NODE_NAME]                 
-                print(NODE_NAME,log_msg)
-            elif data[FIELD_NEXT_HOP] == IPV6_ADDR:
-                messages.append(data)
+                        #### verificar se carro está dentro a area de alerta
+                        #### encontrar o próximo nó perto do epicentro e enviar para ele
+                        print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ", data[FIELD_EPICENTER_X],data[FIELD_EPICENTER_Y]) 
+                        messages.append(data)
+                elif data[FIELD_DEST] == IPV6_ADDR and data[DENM_TYPE] == COLLISION_RISK:
+                        print(NODE_NAME,"[DENM] << COLLISION_RISK with "+data[FIELD_NAME])
+                elif data[FIELD_NEXT_HOP] == IPV6_ADDR:
+                    messages.append(data)
+                
 
 """
 Esta funcao serve para analisar colisoes iminentes (que vao ocorrer a menos de dois segundos)
 a partir da velocidade dos veiculos, calcula-se o tempo para ocorrer a colisao
 e é enviada uma DENM para o veiculo com que o carro em questao vai colidir
 """
-
 def analyze_colisions(): 
+    last_collision_risks = {}
     while True:
         if len(colision_buffer) > 0:
             msg = colision_buffer[0]
@@ -269,11 +270,32 @@ def analyze_colisions():
                 dist = ((node_x-x)**2+(node_y-y)**2)**(1/2) #calcular a distancia entre nos
                 time = dist/total_velocity
                 if time > 2:
-                    print(NODE_NAME,"[DEMN] COLLISION_RISK with "+str(msg[FIELD_NAME]))
-                    msg_denm = build_denm(NODE_NAME, IPV6_ADDR,msg[FIELD_ORIGIN],msg[FIELD_ORIGIN],COLLISION_RISK)
-                    sock.sendto(msg_denm.encode(), (mcast_addr, port))
+                    if msg[FIELD_NAME] in last_collision_risks.keys():
+                        last_time = last_collision_risks[msg[FIELD_NAME]]
+                        if datetime.timestamp(datetime.now()) - last_time > 10:                            
+                            last_collision_risks[msg[FIELD_NAME]] = send_denm(NODE_NAME, IPV6_ADDR,msg[FIELD_ORIGIN],msg[FIELD_ORIGIN],COLLISION_RISK, msg[FIELD_NAME]) 
+                    else:
+                        last_collision_risks[msg[FIELD_NAME]] = send_denm(NODE_NAME, IPV6_ADDR,msg[FIELD_ORIGIN],msg[FIELD_ORIGIN],COLLISION_RISK, msg[FIELD_NAME]) 
+
             
             colision_buffer.remove(msg)
+
+"""
+funcao para construir uma DENM
+"""
+def send_denm(name,origin, dest, next_hop, risk_type, name_dest):
+    msg_denm = {
+        FIELD_NAME: name,
+        FIELD_ORIGIN: origin,
+        FIELD_DEST: dest,
+        FIELD_NEXT_HOP: next_hop,
+        FIELD_TYPE_MSG: DENM_MSG, 
+        DENM_TYPE: risk_type
+    }
+    print(NODE_NAME,"[DEMN] >> COLLISION_RISK with "+name_dest)
+    sock.sendto(json.dumps(msg_denm).encode(), (mcast_addr, port))
+
+    return datetime.timestamp(datetime.now())
 
 def update_cars_connected(data):
    ip = data[FIELD_IP]

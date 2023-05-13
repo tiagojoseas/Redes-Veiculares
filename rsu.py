@@ -8,8 +8,8 @@ port = 3000
 
 # Create a sockets
 # Bind the socket to an address and port
-sock_v = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-sock_v.bind(('::', port))
+sock_cars = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+sock_cars.bind(('::', port))
 
 # Bind the socket to a local address and port
 sock_server = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
@@ -50,7 +50,7 @@ def analyze_connections():
             car = cars_connected_cp.get(ip_node)
             if ip_node not in last_status.keys():
                 show_recv = "["+str(ip_node)+"] "+ car.get(FIELD_NAME)+": NEW CAR" 
-                print(show_recv)
+                print(show_recv, car[FIELD_POS_X], car[FIELD_POS_Y])
                 last_status[ip_node] = None
             else:
                 status = STATUS_CONNECTED
@@ -63,11 +63,12 @@ def analyze_connections():
                     print(show_recv) 
 
         # Envia a mensagem para o grupo multicast
-        #sock_v.sendto(message.encode(), (mcast_addr, port))
+        #sock_cars.sendto(message.encode(), (mcast_addr, port))
 
 #calular nó com menor distancia da area
-def get_netxt_node(node_x, node_y):
-    dist = ((node_x-list(cars_connected.keys())[0].get(FIELD_POS_X))**2+(node_y-list(cars_connected.keys())[0].get(FIELD_POS_Y))**2)**(1/2) #buscar o primeiro nó da lista e calcular a dist
+def get_next_node(node_x, node_y):
+    ipCarAux = list(cars_connected.keys())[0]
+    dist = ((node_x-cars_connected[ipCarAux][FIELD_POS_X])**2+(node_y-cars_connected[ipCarAux][FIELD_POS_Y])**2)**(1/2) #buscar o primeiro nó da lista e calcular a dist
     for ip_node in cars_connected.keys():
             car = cars_connected[ip_node]
             distAux = ((node_x-car.get(FIELD_POS_X))**2+(node_y-car.get(FIELD_POS_Y))**2)**(1/2)
@@ -88,11 +89,11 @@ def receive_msg_from_cars():
     mcast_group_tuple = mcast_group + mcast_if
 
     # Join the multicast group
-    sock_v.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mcast_group_tuple)
+    sock_cars.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mcast_group_tuple)
   
     while True:
         # Obter dado e endereco
-        data, addr = sock_v.recvfrom(1024)
+        data, addr = sock_cars.recvfrom(1024)
         # Obter timestamp atual
         time_rc = datetime.timestamp(datetime.now())
         # Converter dados para JSON
@@ -106,21 +107,19 @@ def receive_msg_from_cars():
         data[FIELD_STATUS_CONNECTION] = STATUS_CONNECTED
 
         # Inserir dados no dicionário
-        update_cars_connected(ip_node, data)
         if data[FIELD_TYPE_MSG]!= DENM_MSG:
+            update_cars_connected(data)
             sock_server.sendto(json.dumps(data).encode(), (server_address, server_rsu_port))
-
 
 def receive_msg_from_server():
     while True:
         # Obter dado e endereco
         data, addr = sock_server.recvfrom(1024)
         data = json.loads(data)
-        print(">  SERVER: ", data[FIELD_TYPE_MSG],data[DENM_TYPE])
         if data[FIELD_TYPE_MSG] == DENM_MSG:
             if data[DENM_TYPE] == TRAFFIC_JAM:
-                print(">  TRAFFIC_JAM: ",data[FIELD_EPICENTER_X], data[FIELD_EPICENTER_Y])
-                next_hop_addr = get_netxt_node(data[FIELD_EPICENTER_X],data[FIELD_EPICENTER_Y])
+                next_hop_addr = get_next_node(data[FIELD_EPICENTER_X],data[FIELD_EPICENTER_Y])
+                print("> TRAFFIC_JAM at: ",data[FIELD_EPICENTER_X], data[FIELD_EPICENTER_Y], ">>", cars_connected[next_hop_addr][FIELD_NAME])
                 msg_denm = {
                         FIELD_EPICENTER_X: data[FIELD_EPICENTER_X],
                         FIELD_EPICENTER_Y: data[FIELD_EPICENTER_Y],
@@ -130,10 +129,10 @@ def receive_msg_from_server():
                         DENM_TYPE: TRAFFIC_JAM,
                         FIELD_NEXT_HOP:next_hop_addr
                         }
-                
+                sock_cars.sendto(json.dumps(msg_denm).encode(), (mcast_addr, port))
                 #linha para enviar para o carro (nao sei como)
                
-def update_cars_connected(ip_node, data):   
+def update_cars_connected(data):   
     cars_connected[data[FIELD_ORIGIN]] = data
     
 

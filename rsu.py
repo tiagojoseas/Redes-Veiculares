@@ -21,6 +21,7 @@ sock_server.bind((local_address, server_rsu_port))
 
 cars_connected = {}
 last_status = {}
+jamn_data = {}
 
 def print_data():    
     while True:
@@ -63,6 +64,18 @@ def analyze_connections():
 
         # Envia a mensagem para o grupo multicast
         #sock_v.sendto(message.encode(), (mcast_addr, port))
+
+#calular nó com menor distancia da area
+def get_netxt_node(node_x, node_y):
+    dist = ((node_x-list(cars_connected.keys())[0].get(FIELD_POS_X))**2+(node_y-list(cars_connected.keys())[0].get(FIELD_POS_Y))**2)**(1/2) #buscar o primeiro nó da lista e calcular a dist
+    for ip_node in cars_connected.keys():
+            car = cars_connected[ip_node]
+            distAux = ((node_x-car.get(FIELD_POS_X))**2+(node_y-car.get(FIELD_POS_Y))**2)**(1/2)
+            if distAux <  dist:
+                ipCarAux = car[FIELD_IP]
+                dist = distAux
+    
+    return ipCarAux
 
 def receive_msg_from_cars():
     
@@ -107,9 +120,22 @@ def receive_msg_from_server():
         if data[FIELD_TYPE_MSG] == DENM_MSG:
             if data[DENM_TYPE] == TRAFFIC_JAM:
                 print(">  TRAFFIC_JAM: ",data[FIELD_EPICENTER_X], data[FIELD_EPICENTER_Y])
+                next_hop_addr = get_netxt_node(data[FIELD_EPICENTER_X],data[FIELD_EPICENTER_Y])
+                msg_denm = {
+                        FIELD_EPICENTER_X: data[FIELD_EPICENTER_X],
+                        FIELD_EPICENTER_Y: data[FIELD_EPICENTER_Y],
+                        FIELD_RADIUS_S : data[FIELD_RADIUS_S],
+                        FIELD_RADIUS_B : data[FIELD_RADIUS_B],
+                        FIELD_TYPE_MSG: DENM_MSG, 
+                        DENM_TYPE: TRAFFIC_JAM,
+                        FIELD_NEXT_HOP:next_hop_addr
+                        }
+                
+                #linha para enviar para o carro (nao sei como)
                
 def update_cars_connected(ip_node, data):   
     cars_connected[data[FIELD_ORIGIN]] = data
+    
 
 if __name__ == "__main__":
     print_th = threading.Thread(target=print_data, name="Send Thread")

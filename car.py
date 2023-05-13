@@ -22,7 +22,7 @@ IPV6_ADDR = addresses[0]
 cars_connected = {} #dicionario para saber quais os carros conectados
 
 messages = [] #lista para guardar mensagens para depois reencaminhar
-colision_buffer = [] #lista para guardar mensagens para depois reencaminhar
+colision_buffer = [] #lista para guardar mensagens de colisao para depois reencaminhar
 #pegar na localizacao do RSU
 f_rsu = open("../n11.xy", "r")
 pos_rsu = f_rsu.read().split(" ")
@@ -169,7 +169,8 @@ def forward_msg(): #encaminhar mensagens recebidas de outros nos
         # verificar as DENM
         denm_arr=[]
         for msg in messages:
-            if msg[FIELD_TYPE_MSG]== DENM_MSG: denm_arr.append(msg)
+            if msg[FIELD_TYPE_MSG]== DENM_MSG:
+                denm_arr.append(msg)
 
         for denm in denm_arr:
             next_hop = get_netxt_node()
@@ -265,7 +266,7 @@ def analyze_colisions():
                 node_y = msg[FIELD_POS_Y]
                 x, y = get_node_location(NODE_NAME) 
                 total_velocity = float(msg[FIELD_VELOCITY]+velocity)/3.6
-                dist = ((node_x-x)**2+(node_y-y)**2)**(1/2) #calcualr a distancia entre nos
+                dist = ((node_x-x)**2+(node_y-y)**2)**(1/2) #calcular a distancia entre nos
                 time = dist/total_velocity
                 if time > 2:
                     print(NODE_NAME,"[DEMN] COLLISION_RISK with "+str(msg[FIELD_NAME]))

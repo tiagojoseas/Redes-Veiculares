@@ -170,20 +170,26 @@ def forward_msg(): #encaminhar mensagens recebidas de outros nos
         denm_arr=[]
         for msg in messages:
             if msg[FIELD_TYPE_MSG]== DENM_MSG:
+                messages.remove(msg)
+                if msg[DENM_TYPE]== TRAFFIC_JAM:
+                    x, y = get_node_location(NODE_NAME)
+                    dist = ((msg[FIELD_EPICENTER_X]-x)**2+(msg[FIELD_EPICENTER_Y]-y)**2)**(1/2)                    
+                    if dist < msg[FIELD_RADIUS_B]: 
+                        # se estiver dentro da area
+                        msg[FIELD_NEXT_HOP] = mcast_addr 
+                    else:   
+                        # se estiver fora da area
+                        msg[FIELD_NEXT_HOP] = get_next_node(msg[FIELD_EPICENTER_X],msg[FIELD_EPICENTER_Y])
                 denm_arr.append(msg)
 
+
         for denm in denm_arr:
-            next_hop = get_next_node()
-            messages.remove(denm)
-            denm[FIELD_NEXT_HOP] = next_hop
-            msg_denm = json.dumps(denm)
-            sock.sendto(msg_denm.encode(), (mcast_addr, port))
+            sock.sendto(json.dumps(denm).encode(), (mcast_addr, port))
             
         # verificar as CAM
         if len(messages) > 0:
             msg = messages[0]
-            next_hop = get_next_node(pos_rsu_x, pos_rsu_y)
-            msg[FIELD_NEXT_HOP] = next_hop
+            msg[FIELD_NEXT_HOP]  = get_next_node(pos_rsu_x, pos_rsu_y)
             msg = json.dumps(msg)
             sock.sendto(msg.encode(), (mcast_addr, port))
         time.sleep(0.5)
@@ -231,24 +237,18 @@ def receive_msg():
                 if data[FIELD_NEXT_HOP] == IPV6_ADDR:
                     data[FIELD_LAST_HOP] == IPV6_ADDR
                     messages.append(data)
-                    if addr[0] != IPV6_ADDR: 
-                        show_recv = "[CAM] << "+ data[FIELD_NAME]+" :" + str(data.get(FIELD_VELOCITY))+" kmh"
-                        next_hop = get_next_node(pos_rsu_x, pos_rsu_y)
-                        data[FIELD_NEXT_HOP] = next_hop
-
-                        data = json.dumps(data)
-                        sock.sendto(data.encode(), (mcast_addr, port))
         
         elif data[FIELD_TYPE_MSG] == DENM_MSG:
                 if data[DENM_TYPE] == TRAFFIC_JAM:
-                        #### verificar se carro está dentro a area de alerta
-                        #### encontrar o próximo nó perto do epicentro e enviar para ele
-                        print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ", data[FIELD_EPICENTER_X],data[FIELD_EPICENTER_Y]) 
-                        messages.append(data)
+                        # verificar se carro está dentro a area de alerta
+                        # encontrar o próximo nó perto do epicentro e enviar para ele
+                        if data[FIELD_NEXT_HOP] == IPV6_ADDR: # se for o proximo no
+                            messages.append(data)
+                        elif data[FIELD_NEXT_HOP] == mcast_addr:
+                            print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ", data[FIELD_EPICENTER_X],data[FIELD_EPICENTER_Y]) 
+
                 elif data[FIELD_DEST] == IPV6_ADDR and data[DENM_TYPE] == COLLISION_RISK:
                         print(NODE_NAME,"[DENM] << COLLISION_RISK with "+data[FIELD_NAME])
-                elif data[FIELD_NEXT_HOP] == IPV6_ADDR:
-                    messages.append(data)
                 
 
 """

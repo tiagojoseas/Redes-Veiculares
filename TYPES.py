@@ -46,9 +46,6 @@ DENM_TYPE = "dem_type"
 COLLISION_RISK = 0 
 TRAFFIC_JAM = 1 
 
-
-
-
 CONNECTION_MSG = 0 #tipo de mensagem para manter conexão com vizinhos
 CAM_MSG = 1 #tipo de mensagem para enviar dados
 DENM_MSG = 2 #mensagem de alerta

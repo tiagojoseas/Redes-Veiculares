@@ -187,8 +187,10 @@ def forward_msg(): #encaminhar mensagens recebidas de outros nos
             sock.sendto(json.dumps(denm).encode(), (mcast_addr, port))
             
         # verificar as CAM
+            
         if len(messages) > 0:
             msg = messages[0]
+            print (NODE_NAME,"[CAM] << ", msg[FIELD_NAME]) 
             msg[FIELD_NEXT_HOP]  = get_next_node(pos_rsu_x, pos_rsu_y)
             msg = json.dumps(msg)
             sock.sendto(msg.encode(), (mcast_addr, port))
@@ -230,7 +232,8 @@ def receive_msg():
                 update_cars_connected(data)
             
         elif data[FIELD_TYPE_MSG] == CAM_MSG:
-                if data[FIELD_ORIGIN] == data[FIELD_NEXT_HOP]: 
+                print (NODE_NAME,"[CAM] << ", data[FIELD_NAME]) 
+                if data[FIELD_ORIGIN] in cars_connected.keys(): 
                     colision_buffer.append(data)
                 
                 # se pacote dirigido a mim vamos reencaminha-lo

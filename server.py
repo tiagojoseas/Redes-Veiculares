@@ -30,6 +30,9 @@ def start_server(server_address, server_port):
 
         data_storage[data[FIELD_ORIGIN]] = data
 
+        #if data[FIELD_TYPE_MSG] == CAM_MSG:
+	        #print("[CAM]",data[FIELD_NAME])
+
         denm_array = []
         for ip1 in data_storage:
             count_cars = 0

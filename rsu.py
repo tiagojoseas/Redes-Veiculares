@@ -5,7 +5,6 @@ from TYPES import *
 mcast_addr = 'ff05::4'
 port = 3000
 
-
 # Create a sockets
 # Bind the socket to an address and port
 sock_cars = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
@@ -17,7 +16,6 @@ local_address = "2001:690:2280:820::2"  # Use any available IPv6 address on the 
 server_address = "2001:690:2280:820::3" 
 server_rsu_port = 9999 
 sock_server.bind((local_address, server_rsu_port))
-
 
 cars_connected = {}
 last_status = {}
@@ -133,8 +131,7 @@ def receive_msg_from_server():
                 #linha para enviar para o carro (nao sei como)
                
 def update_cars_connected(data):   
-    cars_connected[data[FIELD_ORIGIN]] = data
-    
+    cars_connected[data[FIELD_ORIGIN]] = data    
 
 if __name__ == "__main__":
     print_th = threading.Thread(target=print_data, name="Send Thread")

@@ -272,7 +272,7 @@ def analyze_colisions():
                 if time > 2:
                     if msg[FIELD_NAME] in last_collision_risks.keys():
                         last_time = last_collision_risks[msg[FIELD_NAME]]
-                        if datetime.timestamp(datetime.now()) - last_time > 10:                            
+                        if datetime.timestamp(datetime.now()) - last_time > 5:                            
                             last_collision_risks[msg[FIELD_NAME]] = send_denm(NODE_NAME, IPV6_ADDR,msg[FIELD_ORIGIN],msg[FIELD_ORIGIN],COLLISION_RISK, msg[FIELD_NAME]) 
                     else:
                         last_collision_risks[msg[FIELD_NAME]] = send_denm(NODE_NAME, IPV6_ADDR,msg[FIELD_ORIGIN],msg[FIELD_ORIGIN],COLLISION_RISK, msg[FIELD_NAME]) 

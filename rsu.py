@@ -118,16 +118,8 @@ def receive_msg_from_server():
             if data[DENM_TYPE] == TRAFFIC_JAM:
                 next_hop_addr = get_next_node(data[FIELD_EPICENTER_X],data[FIELD_EPICENTER_Y])
                 print("> TRAFFIC_JAM at: ",data[FIELD_EPICENTER_X], data[FIELD_EPICENTER_Y], ">>", cars_connected[next_hop_addr][FIELD_NAME])
-                msg_denm = {
-                        FIELD_EPICENTER_X: data[FIELD_EPICENTER_X],
-                        FIELD_EPICENTER_Y: data[FIELD_EPICENTER_Y],
-                        FIELD_RADIUS_S : data[FIELD_RADIUS_S],
-                        FIELD_RADIUS_B : data[FIELD_RADIUS_B],
-                        FIELD_TYPE_MSG: DENM_MSG, 
-                        DENM_TYPE: TRAFFIC_JAM,
-                        FIELD_NEXT_HOP:next_hop_addr
-                        }
-                sock_cars.sendto(json.dumps(msg_denm).encode(), (mcast_addr, port))
+                data[FIELD_NEXT_HOP] = next_hop_addr 
+                sock_cars.sendto(json.dumps(data).encode(), (mcast_addr, port))
                 #linha para enviar para o carro (nao sei como)
                
 def update_cars_connected(data):   

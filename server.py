@@ -11,11 +11,12 @@ server_port = 9999
 R = 160 #15 pixeis = 10 metros
 MAX_CARS = 3
 data_storage = {}
+NODE_NAME = ""
 
 def start_server(server_address, server_port):
     # Create an IPv6 socket
     sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-
+    NODE_NAME = socket.gethostname()
     # Bind the socket to the server address and port
     sock.bind((server_address, server_port))
     while True:
@@ -56,12 +57,11 @@ def start_server(server_address, server_port):
                 if not discard:
                     msg_denm = {
                         FIELD_ORIGIN: server_address,
-                        FIELD_DEST: "area",
                         FIELD_EPICENTER_X: x1,
                         FIELD_EPICENTER_Y: y1,
                         FIELD_RADIUS_S : R,
                         FIELD_RADIUS_B : 3*R,
-                        FIELD_NAME: "serverfire",
+                        FIELD_NAME: NODE_NAME,
                         FIELD_TYPE_MSG: DENM_MSG, 
                         DENM_TYPE: TRAFFIC_JAM,
                         FIELD_TIMESTAMP: datetime.timestamp(datetime.now())

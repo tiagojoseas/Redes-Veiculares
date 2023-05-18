@@ -133,7 +133,6 @@ def send_CAM(): #envia uma mensagem de 1 em 1 segundo com os seus dados
             msg_cam = {
                 FIELD_TYPE_MSG: CAM_MSG,
                 FIELD_ORIGIN: IPV6_ADDR,
-                FIELD_LAST_HOP: IPV6_ADDR, #no anterior é ele mesmo
                 FIELD_NEXT_HOP: next_hop, #colocar o ip do next hop que vai encaminhar a mensagem
                 #caracteristicas do no
                 FIELD_NAME: NODE_NAME,
@@ -238,7 +237,6 @@ def receive_msg():
                 
                 # se pacote dirigido a mim vamos reencaminha-lo
                 if data[FIELD_NEXT_HOP] == IPV6_ADDR:
-                    data[FIELD_LAST_HOP] == IPV6_ADDR
                     messages.append(data)
         
         elif data[FIELD_TYPE_MSG] == DENM_MSG:
@@ -276,9 +274,9 @@ def analyze_colisions():
                     if msg[FIELD_NAME] in last_collision_risks.keys():
                         last_time = last_collision_risks[msg[FIELD_NAME]]
                         if datetime.timestamp(datetime.now()) - last_time > 5:                            
-                            last_collision_risks[msg[FIELD_NAME]] = send_denm(NODE_NAME, IPV6_ADDR,msg[FIELD_ORIGIN],msg[FIELD_ORIGIN],COLLISION_RISK, msg[FIELD_NAME]) 
+                            last_collision_risks[msg[FIELD_NAME]] = send_denm(NODE_NAME, IPV6_ADDR,msg[FIELD_ORIGIN],COLLISION_RISK) 
                     else:
-                        last_collision_risks[msg[FIELD_NAME]] = send_denm(NODE_NAME, IPV6_ADDR,msg[FIELD_ORIGIN],msg[FIELD_ORIGIN],COLLISION_RISK, msg[FIELD_NAME]) 
+                        last_collision_risks[msg[FIELD_NAME]] = send_denm(NODE_NAME, IPV6_ADDR,msg[FIELD_ORIGIN],COLLISION_RISK) 
 
             
             colision_buffer.remove(msg)
@@ -286,12 +284,11 @@ def analyze_colisions():
 """
 funcao para construir uma DENM
 """
-def send_denm(name,origin, dest, next_hop, risk_type, name_dest):
+def send_denm(name,origin, dest, risk_type):
     msg_denm = {
         FIELD_NAME: name,
         FIELD_ORIGIN: origin,
         FIELD_DEST: dest,
-        FIELD_NEXT_HOP: next_hop,
         FIELD_TYPE_MSG: DENM_MSG, 
         DENM_TYPE: risk_type
     }

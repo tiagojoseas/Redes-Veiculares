@@ -124,6 +124,25 @@ def get_next_node(node_x, node_y):
     
     return ipCarAux
 
+def get_next_node_traffic_jam(node_x, node_y,radius_s, radius_b):
+    
+    dist = ((node_x-pos_x)**2+(node_y-pos_y)**2)**(1/2) #calcualr a distancia do proprio no
+    ipCarAux = IPV6_ADDR
+    #variavel auxiliar para guardar a distancia min atual
+    #ipCarAux = "" #variavel auxiliar para guardar o ip do carro com a dist min atual
+    for ip_node in cars_connected.keys():
+            car = cars_connected[ip_node]
+            distAux = ((node_x-car.get(FIELD_POS_X))**2+(node_y-car.get(FIELD_POS_Y))**2)**(1/2)
+            if distAux > dist and distAux > radius_s and distAux < radius_b:
+                ipCarAux = car[FIELD_IP]
+                dist = distAux
+            elif distAux <= dist and distAux > radius_b:
+                ipCarAux = car[FIELD_IP]
+                dist = distAux
+
+    
+    return ipCarAux
+
 
 def send_CAM(): #envia uma mensagem de 1 em 1 segundo com os seus dados    
     while True:
@@ -175,14 +194,16 @@ def forward_msg(): #encaminhar mensagens recebidas de outros nos
                     dist = ((msg[FIELD_EPICENTER_X]-x)**2+(msg[FIELD_EPICENTER_Y]-y)**2)**(1/2)                    
                     if dist < msg[FIELD_RADIUS_B] and dist > msg[FIELD_RADIUS_S]: 
                         # se estiver dentro da area grande e fora da area pequena
-                        msg[FIELD_NEXT_HOP] = mcast_addr 
+                        msg[FIELD_NEXT_HOP] = mcast_addr
+                        print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ","x:"+str(msg[FIELD_EPICENTER_X]), "y:"+str(msg[FIELD_EPICENTER_Y]), "("+msg[FIELD_EPICENTER_NAME]+")") 
                     else:   
                         # se estiver fora da area
-                        msg[FIELD_NEXT_HOP] = get_next_node(msg[FIELD_EPICENTER_X],msg[FIELD_EPICENTER_Y])
+                        msg[FIELD_NEXT_HOP] = get_next_node_traffic_jam(msg[FIELD_EPICENTER_X],msg[FIELD_EPICENTER_Y],msg[FIELD_RADIUS_S],msg[FIELD_RADIUS_S])
                 denm_arr.append(msg)
 
 
         for denm in denm_arr:
+            denm_arr.remove(denm)
             sock.sendto(json.dumps(denm).encode(), (mcast_addr, port))
             
         # verificar as CAM
@@ -191,8 +212,10 @@ def forward_msg(): #encaminhar mensagens recebidas de outros nos
             msg = messages[0]
             #print (NODE_NAME,"[CAM] << ", msg[FIELD_NAME]) 
             msg[FIELD_NEXT_HOP]  = get_next_node(pos_rsu_x, pos_rsu_y)
-            msg = json.dumps(msg)
-            sock.sendto(msg.encode(), (mcast_addr, port))
+            if(msg[FIELD_NEXT_HOP] != IPV6_ADDR):
+                messages.remove(msg)
+                msg = json.dumps(msg)
+                sock.sendto(msg.encode(), (mcast_addr, port))
         
 """ Um no e capaz de receber dois tipos de mensagens:
     - uma que confirma a conexao com outro no (especie de keep alive do OSPF)
@@ -247,8 +270,8 @@ def receive_msg():
                         elif data[FIELD_NEXT_HOP] == mcast_addr:
                             # se tiver sido enviada em multicast
                             print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ","x:"+str(data[FIELD_EPICENTER_X]), "y:"+str(data[FIELD_EPICENTER_Y]), "("+data[FIELD_EPICENTER_NAME]+")") 
-                elif data[FIELD_DEST] == IPV6_ADDR and data[DENM_TYPE] == COLLISION_RISK:
-                        print(NODE_NAME,"[DENM] << COLLISION_RISK with "+data[FIELD_NAME])
+                #elif data[FIELD_DEST] == IPV6_ADDR and data[DENM_TYPE] == COLLISION_RISK:
+                        #print(NODE_NAME,"[DENM] << COLLISION_RISK with "+data[FIELD_NAME])
                 
 
 """

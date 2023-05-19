@@ -50,9 +50,12 @@ def start_server(server_address, server_port):
                         count_cars+=1
 
             if count_cars >= MAX_CARS:
+                
                 try: denm_dict[ip1]
                 except: denm_dict[ip1] = 0
+
                 if datetime.timestamp(datetime.now()) - denm_dict[ip1] > 5:
+                    
                     msg_denm = {
                         FIELD_ORIGIN: server_address,
                         FIELD_EPICENTER_X: x1,
@@ -69,6 +72,9 @@ def start_server(server_address, server_port):
                     print("SERVER >> TRAFFIC_JAM",data_storage[ip1][FIELD_NAME],x1, y1,datetime.now(), count_cars)
                     sock.sendto(json.dumps(msg_denm).encode(), (rsu_address, rsu_port))
                     denm_dict[ip1] = msg_denm[FIELD_TIMESTAMP]
+                
 
 if __name__ == "__main__":
     start_server(server_address, server_port)
+
+

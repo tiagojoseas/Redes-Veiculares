@@ -65,6 +65,8 @@ def analyze_connections():
 
 #calular nó com menor distancia da area
 def get_next_node(node_x, node_y):
+    if len(cars_neigh_connected) == 0:
+        return None
     ipCarAux = list(cars_neigh_connected.keys())[0]
     dist = ((node_x-cars_neigh_connected[ipCarAux][FIELD_POS_X])**2+(node_y-cars_neigh_connected[ipCarAux][FIELD_POS_Y])**2)**(1/2) #buscar o primeiro nó da lista e calcular a dist
     for ip_node in cars_neigh_connected.keys():
@@ -72,8 +74,7 @@ def get_next_node(node_x, node_y):
             distAux = ((node_x-car.get(FIELD_POS_X))**2+(node_y-car.get(FIELD_POS_Y))**2)**(1/2)
             if distAux <  dist:
                 ipCarAux = car[FIELD_IP]
-                dist = distAux
-    
+                dist = distAux    
     return ipCarAux
 
 def receive_msg_from_cars():
@@ -106,12 +107,11 @@ def receive_msg_from_cars():
 
 
         # Inserir dados no dicionário
-        if data[FIELD_TYPE_MSG]!= DENM_MSG:
-            sock_server.sendto(json.dumps(data).encode(), (server_address, server_rsu_port))
         if data[FIELD_TYPE_MSG] == CONNECTION_MSG:
             update_cars_neigh_connected(data)
         if data[FIELD_TYPE_MSG] == CAM_MSG:
-            print("RSU << CAM ",data[FIELD_NAME])
+            sock_server.sendto(json.dumps(data).encode(), (server_address, server_rsu_port))
+            #print("RSU << CAM ",data[FIELD_NAME])
 
 def receive_msg_from_server():
     while True:
@@ -121,9 +121,10 @@ def receive_msg_from_server():
         if data[FIELD_TYPE_MSG] == DENM_MSG:
             if data[DENM_TYPE] == TRAFFIC_JAM:
                 next_hop_addr = get_next_node(data[FIELD_EPICENTER_X],data[FIELD_EPICENTER_Y])
-                print("RSU << TRAFFIC_JAM at: ","x:"+data[FIELD_EPICENTER_X], "y:"+data[FIELD_EPICENTER_Y], "("+data[FIELD_EPICENTER_NAME]+") >>", cars_neigh_connected[next_hop_addr][FIELD_NAME])
-                data[FIELD_NEXT_HOP] = next_hop_addr 
-                sock_cars.sendto(json.dumps(data).encode(), (mcast_addr, port))
+                if next_hop_addr != None:
+                    print("RSU << TRAFFIC_JAM ","x:"+str(data[FIELD_EPICENTER_X]), "y:"+str(data[FIELD_EPICENTER_Y]), "("+data[FIELD_EPICENTER_NAME]+") >>", cars_neigh_connected[next_hop_addr][FIELD_NAME])
+                    data[FIELD_NEXT_HOP] = next_hop_addr 
+                    sock_cars.sendto(json.dumps(data).encode(), (mcast_addr, port))
                 #linha para enviar para o carro (nao sei como)
                
 def update_cars_neigh_connected(data):   

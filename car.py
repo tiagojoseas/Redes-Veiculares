@@ -246,8 +246,7 @@ def receive_msg():
                             messages.append(data)
                         elif data[FIELD_NEXT_HOP] == mcast_addr:
                             # se tiver sido enviada em multicast
-                            print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ","x:"+data[FIELD_EPICENTER_X], "y:"+data[FIELD_EPICENTER_Y], "("+data[FIELD_EPICENTER_NAME]+")") 
-
+                            print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ","x:"+str(data[FIELD_EPICENTER_X]), "y:"+str(data[FIELD_EPICENTER_Y]), "("+data[FIELD_EPICENTER_NAME]+")") 
                 elif data[FIELD_DEST] == IPV6_ADDR and data[DENM_TYPE] == COLLISION_RISK:
                         print(NODE_NAME,"[DENM] << COLLISION_RISK with "+data[FIELD_NAME])
                 

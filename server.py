@@ -8,7 +8,7 @@ rsu_port = 9999
 server_address = "2001:690:2280:820::3" 
 server_port = 9999 
 
-R = 100 #15 pixeis = 10 metros
+R = 50 #15 pixeis = 10 metros
 MAX_CARS = 2
 data_storage = {}
 denm_dict = {}
@@ -64,13 +64,11 @@ def start_server(server_address, server_port):
                         FIELD_TYPE_MSG: DENM_MSG, 
                         DENM_TYPE: TRAFFIC_JAM,
                         FIELD_TIMESTAMP: datetime.timestamp(datetime.now())
-                        }
+                    }
                     
-                    print("SERVER >> TRAFFIC_JAM",data_storage[ip1][FIELD_NAME],x1, y1,datetime.now())
+                    print("SERVER >> TRAFFIC_JAM",data_storage[ip1][FIELD_NAME],x1, y1,datetime.now(), count_cars)
                     sock.sendto(json.dumps(msg_denm).encode(), (rsu_address, rsu_port))
                     denm_dict[ip1] = msg_denm[FIELD_TIMESTAMP]
 
-                   
-
-
-start_server(server_address, server_port)
+if __name__ == "__main__":
+    start_server(server_address, server_port)

@@ -173,8 +173,8 @@ def forward_msg(): #encaminhar mensagens recebidas de outros nos
                 if msg[DENM_TYPE]== TRAFFIC_JAM:
                     x, y = get_node_location(NODE_NAME)
                     dist = ((msg[FIELD_EPICENTER_X]-x)**2+(msg[FIELD_EPICENTER_Y]-y)**2)**(1/2)                    
-                    if dist < msg[FIELD_RADIUS_B]: 
-                        # se estiver dentro da area
+                    if dist < msg[FIELD_RADIUS_B] and dist > msg[FIELD_RADIUS_S]: 
+                        # se estiver dentro da area grande e fora da area pequena
                         msg[FIELD_NEXT_HOP] = mcast_addr 
                     else:   
                         # se estiver fora da area
@@ -189,11 +189,10 @@ def forward_msg(): #encaminhar mensagens recebidas de outros nos
             
         if len(messages) > 0:
             msg = messages[0]
-            print (NODE_NAME,"[CAM] << ", msg[FIELD_NAME]) 
+            #print (NODE_NAME,"[CAM] << ", msg[FIELD_NAME]) 
             msg[FIELD_NEXT_HOP]  = get_next_node(pos_rsu_x, pos_rsu_y)
             msg = json.dumps(msg)
             sock.sendto(msg.encode(), (mcast_addr, port))
-        time.sleep(0.5)
         
 """ Um no e capaz de receber dois tipos de mensagens:
     - uma que confirma a conexao com outro no (especie de keep alive do OSPF)
@@ -222,19 +221,19 @@ def receive_msg():
         data, addr = sock.recvfrom(1024)
         data = json.loads(data.decode()) #converter para json
 
-        if data[FIELD_TYPE_MSG] == CONNECTION_MSG:
+        if data[FIELD_ORIGIN] == IPV6_ADDR:
+            None # ignora
+        elif data[FIELD_TYPE_MSG] == CONNECTION_MSG:
             # Da lista de endereços obter a primeira posicacao referente ao IPv6
-            #verificar se a mensagem que recebeu ja n esta desatualizada
+            # Verificar se a mensagem que recebeu ja n esta desatualizada
             if data[FIELD_TIMESTAMP] - datetime.timestamp(datetime.now()) < 0.7: 
                 # Atualizar/inserir os campos de ultima conexão e de IP                
                 # Inserir dados no dicionário
-                update_cars_connected(data)
-            
+                update_cars_connected(data)            
         elif data[FIELD_TYPE_MSG] == CAM_MSG:
-                print (NODE_NAME,"[CAM] << ", data[FIELD_NAME]) 
+                # print (NODE_NAME,"[CAM] << ", data[FIELD_NAME]) 
                 if data[FIELD_ORIGIN] in cars_connected.keys(): 
-                    colision_buffer.append(data)
-                
+                    colision_buffer.append(data)                
                 # se pacote dirigido a mim vamos reencaminha-lo
                 if data[FIELD_NEXT_HOP] == IPV6_ADDR:
                     messages.append(data)
@@ -246,7 +245,8 @@ def receive_msg():
                         if data[FIELD_NEXT_HOP] == IPV6_ADDR: # se for o proximo no
                             messages.append(data)
                         elif data[FIELD_NEXT_HOP] == mcast_addr:
-                            print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ", data[FIELD_EPICENTER_X],data[FIELD_EPICENTER_Y]) 
+                            # se tiver sido enviada em multicast
+                            print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ","x:"+data[FIELD_EPICENTER_X], "y:"+data[FIELD_EPICENTER_Y], "("+data[FIELD_EPICENTER_NAME]+")") 
 
                 elif data[FIELD_DEST] == IPV6_ADDR and data[DENM_TYPE] == COLLISION_RISK:
                         print(NODE_NAME,"[DENM] << COLLISION_RISK with "+data[FIELD_NAME])
@@ -274,9 +274,9 @@ def analyze_colisions():
                     if msg[FIELD_NAME] in last_collision_risks.keys():
                         last_time = last_collision_risks[msg[FIELD_NAME]]
                         if datetime.timestamp(datetime.now()) - last_time > 5:                            
-                            last_collision_risks[msg[FIELD_NAME]] = send_denm(NODE_NAME, IPV6_ADDR,msg[FIELD_ORIGIN],COLLISION_RISK) 
+                            last_collision_risks[msg[FIELD_NAME]] = send_denm(msg[FIELD_ORIGIN],msg[FIELD_NAME],COLLISION_RISK) 
                     else:
-                        last_collision_risks[msg[FIELD_NAME]] = send_denm(NODE_NAME, IPV6_ADDR,msg[FIELD_ORIGIN],COLLISION_RISK) 
+                        last_collision_risks[msg[FIELD_NAME]] = send_denm(msg[FIELD_ORIGIN],msg[FIELD_NAME],COLLISION_RISK) 
 
             
             colision_buffer.remove(msg)
@@ -284,15 +284,15 @@ def analyze_colisions():
 """
 funcao para construir uma DENM
 """
-def send_denm(name,origin, dest, risk_type):
+def send_denm(dest_ip, dest_name, risk_type):
     msg_denm = {
-        FIELD_NAME: name,
-        FIELD_ORIGIN: origin,
-        FIELD_DEST: dest,
+        FIELD_NAME: NODE_NAME,
+        FIELD_ORIGIN: IPV6_ADDR,
+        FIELD_DEST: dest_ip,
         FIELD_TYPE_MSG: DENM_MSG, 
         DENM_TYPE: risk_type
     }
-    print(NODE_NAME,"[DEMN] >> COLLISION_RISK with "+name_dest)
+    print(NODE_NAME,"[DEMN] >> COLLISION_RISK with "+dest_name)
     sock.sendto(json.dumps(msg_denm).encode(), (mcast_addr, port))
 
     return datetime.timestamp(datetime.now())

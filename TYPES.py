@@ -11,6 +11,7 @@ BUS = 5
 FIELD_NAME = "name"
 FIELD_IP = "ip"
 
+FIELD_EPICENTER_NAME = "epicenter_name"
 FIELD_EPICENTER_X = "epicenter_x"
 FIELD_EPICENTER_Y = "epicenter_y"
 FIELD_RADIUS_S = "small_radius"
@@ -41,6 +42,7 @@ FIELD_POS_X = "x_position" #posição no eixo dos x
 FIELD_POS_Y = "y_position" #posição no eixo dos y
 FIELD_DEST_X = "x_pos_dest" #posicao do destino eixo x
 FIELD_DEST_Y = "y_pos_dest" #posicao do destino eixo y
+
 
 DENM_TYPE = "dem_type"
 COLLISION_RISK = 0 

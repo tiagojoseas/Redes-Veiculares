@@ -8,9 +8,10 @@ rsu_port = 9999
 server_address = "2001:690:2280:820::3" 
 server_port = 9999 
 
-R = 160 #15 pixeis = 10 metros
-MAX_CARS = 3
+R = 100 #15 pixeis = 10 metros
+MAX_CARS = 2
 data_storage = {}
+denm_dict = {}
 NODE_NAME = ""
 
 def start_server(server_address, server_port):
@@ -34,9 +35,9 @@ def start_server(server_address, server_port):
         #if data[FIELD_TYPE_MSG] == CAM_MSG:
 	        #print("[CAM]",data[FIELD_NAME])
 
-        denm_array = []
+        
         for ip1 in data_storage:
-            count_cars = 0
+            count_cars = 1
             x1 = data_storage[ip1][FIELD_POS_X]
             y1 = data_storage[ip1][FIELD_POS_Y]
 
@@ -49,16 +50,14 @@ def start_server(server_address, server_port):
                         count_cars+=1
 
             if count_cars >= MAX_CARS:
-                discard = False
-                for demn in denm_array:
-                    if datetime.timestamp(datetime.now())-demn[FIELD_TIMESTAMP] < 60 and (((demn[FIELD_EPICENTER_X]-x1)**2+(demn[FIELD_EPICENTER_Y]-y1)**2)**(1/2)) < (2*R/3):
-                        discard = True
-                        break
-                if not discard:
+                try: denm_dict[ip1]
+                except: denm_dict[ip1] = 0
+                if datetime.timestamp(datetime.now()) - denm_dict[ip1] > 5:
                     msg_denm = {
                         FIELD_ORIGIN: server_address,
                         FIELD_EPICENTER_X: x1,
                         FIELD_EPICENTER_Y: y1,
+                        FIELD_EPICENTER_NAME: data_storage[ip1][FIELD_NAME],
                         FIELD_RADIUS_S : R,
                         FIELD_RADIUS_B : 3*R,
                         FIELD_NAME: NODE_NAME,
@@ -66,9 +65,12 @@ def start_server(server_address, server_port):
                         DENM_TYPE: TRAFFIC_JAM,
                         FIELD_TIMESTAMP: datetime.timestamp(datetime.now())
                         }
+                    
                     print("SERVER >> TRAFFIC_JAM",data_storage[ip1][FIELD_NAME],x1, y1,datetime.now())
                     sock.sendto(json.dumps(msg_denm).encode(), (rsu_address, rsu_port))
-                    denm_array.append(msg_denm)
+                    denm_dict[ip1] = msg_denm[FIELD_TIMESTAMP]
+
+                   
 
 
 start_server(server_address, server_port)

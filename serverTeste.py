@@ -55,10 +55,10 @@ def start_server(server_address, server_port):
                 #try: denm_dict[ip1]
                 #except: denm_dict[ip1] = [0,0,0]
 
-                if not denm_dict:
+                if denm_dict:
                     for key in denm_dict:
-                        if(not denm_dict and key != ip1):
-                            if ((denm_dict[key][FIELD_EPICENTER_X]-x1)**2+(denm_dict[key][FIELD_EPICENTER_Y]-y1)**2)**(1/2) < (R/3) and datetime.timestamp(datetime.now())-denm_dict[key][FIELD_TIMESTAMP] < 5:
+                        if(key != ip1):
+                            if ((denm_dict[key][FIELD_EPICENTER_X]-x1)**2+(denm_dict[key][FIELD_EPICENTER_Y]-y1)**2)**(1/2) < (R/3) and datetime.timestamp(datetime.now())-denm_dict[key][FIELD_TIMESTAMP] < 5 :
                                 discard = True
                                 break
                 
@@ -76,9 +76,12 @@ def start_server(server_address, server_port):
                         DENM_TYPE: TRAFFIC_JAM,
                         FIELD_TIMESTAMP: datetime.timestamp(datetime.now())
                     }
-                    denm_dict[ip1] = [msg_denm[FIELD_TIMESTAMP],msg_denm[FIELD_EPICENTER_X],msg_denm[FIELD_EPICENTER_X]]
+                    denm_dict[ip1] = msg_denm
                     print("SERVER >> TRAFFIC_JAM",data_storage[ip1][FIELD_NAME],x1, y1,datetime.now(), count_cars)
                     sock.sendto(json.dumps(msg_denm).encode(), (rsu_address, rsu_port))
+                time.sleep(1)
+
+                discard = False    
                
 
 if __name__ == "__main__":

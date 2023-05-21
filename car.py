@@ -178,6 +178,8 @@ def send_CAM(): #envia uma mensagem de 1 em 1 segundo com os seus dados
             sock.sendto(msg_cam.encode(), (mcast_addr, port))
         time.sleep(1)
 
+        
+
 """ a medida que recebe mensagens para encaminhar, adiciona-as numa lista
 elas sao enviadas na ordem FIFO, depois de enviada a mensagem e eliminada """
 
@@ -246,7 +248,6 @@ def receive_msg():
         if data[FIELD_ORIGIN] == IPV6_ADDR:
             None # ignora
         elif data[FIELD_TYPE_MSG] == CONNECTION_MSG:
-            print(data[FIELD_TYPE_NODE])
             # Da lista de endereços obter a primeira posicacao referente ao IPv6
             # Verificar se a mensagem que recebeu ja n esta desatualizada
             if data[FIELD_TIMESTAMP] - datetime.timestamp(datetime.now()) < 0.7: 

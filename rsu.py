@@ -1,5 +1,5 @@
 from datetime import datetime
-import socket,struct, threading, json
+import socket,struct, threading, json, time
 from datetime import datetime
 from TYPES import *
 from netifaces import ifaddresses, AF_INET6
@@ -14,6 +14,13 @@ sock_cars.bind(('::', port))
 NODE_NAME = socket.gethostname()
 addresses = [i['addr'] for i in ifaddresses("eth0").setdefault(AF_INET6, [{'addr':'No IP addr'}])]
 IPV6_ADDR = addresses[0]
+
+#pegar na localizacao do RSU
+f_rsu = open("../n11.xy", "r")
+pos_rsu = f_rsu.read().split(" ")
+pos_rsu_x = float(pos_rsu[0])
+pos_rsu_y = float(pos_rsu[1])
+
 # Bind the socket to a local address and port
 sock_server = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 local_address = "2001:690:2280:820::2"  # Use any available IPv6 address on the local machine
@@ -124,19 +131,18 @@ def receive_msg_from_cars():
         data = json.loads(data.decode())
         # Da lista de endereços obter a primeira posicao referente ao IPv6
         ip_node = addr[0]
+        if ip_node != IPV6_ADDR:
+            # Atualizar/inserir os campos de ultima conexão e de IP
+            ##data[FIELD_ORIGIN] = ip_node
+            data[FIELD_LAST_CONNECTION] = time_rc
+            data[FIELD_STATUS_CONNECTION] = STATUS_CONNECTED
 
-        # Atualizar/inserir os campos de ultima conexão e de IP
-        data[FIELD_ORIGIN] = ip_node
-        data[FIELD_LAST_CONNECTION] = time_rc
-        data[FIELD_STATUS_CONNECTION] = STATUS_CONNECTED
-
-
-        # Inserir dados no dicionário
-        if data[FIELD_TYPE_MSG] == CONNECTION_MSG:
-            update_cars_neigh_connected(data)
-        if data[FIELD_TYPE_MSG] == CAM_MSG:
-            sock_server.sendto(json.dumps(data).encode(), (server_address, server_rsu_port))
-            #print("RSU << CAM ",data[FIELD_NAME])
+            # Inserir dados no dicionário
+            if data[FIELD_TYPE_MSG] == CONNECTION_MSG:
+                update_cars_neigh_connected(data)
+            if data[FIELD_TYPE_MSG] == CAM_MSG:
+                sock_server.sendto(json.dumps(data).encode(), (server_address, server_rsu_port))
+                #print("RSU << CAM ",data[FIELD_NAME])
 
 def receive_msg_from_server():
     while True:
@@ -156,27 +162,26 @@ def update_cars_neigh_connected(data):
     cars_neigh_connected[data[FIELD_ORIGIN]] = data
 
 #pegar na localizacao de um no
-def get_node_location(name):
-    f_pos = open("../"+name+".xy", "r")
-    pos = f_pos.read().split(" ") 
-    f_pos.close()
-    pos_x = float(pos[0])
-    pos_y = float(pos[1])
-    return pos_x, pos_y
+#def get_node_location(name):
+#    f_pos = open("../"+name+".xy", "r")
+#    pos = f_pos.read().split(" ") 
+#    f_pos.close()
+#    pos_x = float(pos[0])
+#    pos_y = float(pos[1])
+#    return pos_x, pos_y
 
 #envia uma mensagem com a sua posicao em multicast para os vizinhos
 #assim, os vizinhos sabem a sua posicao e tambem sabem que estao conectados
 def send_connection():
     while True:
         #ler a sua posicao regularmente
-        x, y = get_node_location(NODE_NAME)  
         data = {
             FIELD_TYPE_NODE: RSU,	
             FIELD_ORIGIN: IPV6_ADDR,
             FIELD_NAME: NODE_NAME,
             FIELD_TYPE_MSG: CONNECTION_MSG,
-            FIELD_POS_X: x, #!!! ler do ficheiro de posições
-            FIELD_POS_Y: y,
+            FIELD_POS_X: pos_rsu_x, #!!! ler do ficheiro de posições
+            FIELD_POS_Y: pos_rsu_y,
             # Obter timestamp atual
             FIELD_TIMESTAMP:  datetime.timestamp(datetime.now())
         }
@@ -184,11 +189,10 @@ def send_connection():
         # Envia a mensagem para o grupo multicast
         sock_cars.sendto(data.encode(), (mcast_addr, port))
         #print(NODE_NAME,"Send Connection: "+data)
-        sock_cars.sleep(0.5)
+        time.sleep(0.5)
 
 
 if __name__ == "__main__":
-    
     send_conn = threading.Thread(target=send_connection, name="Send Conn Thread") #enviar mensagens de conexão em multicast
     print_th = threading.Thread(target=print_data, name="Send Thread")
     analyze = threading.Thread(target=analyze_connections, name="Analyze Thread")

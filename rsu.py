@@ -141,7 +141,7 @@ def receive_msg_from_server():
         data = json.loads(data)
         if data[FIELD_TYPE_MSG] == DENM_MSG:
             if data[DENM_TYPE] == TRAFFIC_JAM:
-                next_hop_addr = get_next_node_traffic_jam(data[FIELD_EPICENTER_X],data[FIELD_EPICENTER_Y])
+                next_hop_addr = get_next_node_traffic_jam(data[FIELD_EPICENTER_X],data[FIELD_EPICENTER_Y],data[FIELD_RADIUS_S],data[FIELD_RADIUS_B])
                 if next_hop_addr != None:
                     print("RSU << TRAFFIC_JAM ","x:"+str(data[FIELD_EPICENTER_X]), "y:"+str(data[FIELD_EPICENTER_Y]), "("+data[FIELD_EPICENTER_NAME]+") >>", cars_neigh_connected[next_hop_addr][FIELD_NAME])
                     data[FIELD_NEXT_HOP] = next_hop_addr 

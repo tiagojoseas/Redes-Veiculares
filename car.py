@@ -267,9 +267,10 @@ def receive_msg():
                         # verificar se carro está dentro a area de alerta
                         # encontrar o próximo nó perto do epicentro e enviar para ele
                         if data[FIELD_NEXT_HOP] == IPV6_ADDR: # se for o proximo no
-                            x, y = get_node_location(NODE_NAME)
-                            if ((x-data[FIELD_EPICENTER_X])**2+(y-data[FIELD_EPICENTER_Y])**2)**(1/2) > data[FIELD_RADIUS_S] :
-                                messages.append(data)
+                            #x, y = get_node_location(NODE_NAME)
+                            #if ((x-data[FIELD_EPICENTER_X])**2+(y-data[FIELD_EPICENTER_Y])**2)**(1/2) > data[FIELD_RADIUS_S] :
+                            messages.append(data)
+                            #print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ","x:"+str(data[FIELD_EPICENTER_X]), "y:"+str(data[FIELD_EPICENTER_Y]), "("+data[FIELD_EPICENTER_NAME]+")") 
                         elif data[FIELD_NEXT_HOP] == mcast_addr:
                             # se tiver sido enviada em multicast
                             print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ","x:"+str(data[FIELD_EPICENTER_X]), "y:"+str(data[FIELD_EPICENTER_Y]), "("+data[FIELD_EPICENTER_NAME]+")") 

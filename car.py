@@ -246,6 +246,7 @@ def receive_msg():
         if data[FIELD_ORIGIN] == IPV6_ADDR:
             None # ignora
         elif data[FIELD_TYPE_MSG] == CONNECTION_MSG:
+            print(data[FIELD_TYPE_NODE])
             # Da lista de endereços obter a primeira posicacao referente ao IPv6
             # Verificar se a mensagem que recebeu ja n esta desatualizada
             if data[FIELD_TIMESTAMP] - datetime.timestamp(datetime.now()) < 0.7: 

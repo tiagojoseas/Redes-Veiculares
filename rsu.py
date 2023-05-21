@@ -1,6 +1,8 @@
+from datetime import datetime
 import socket,struct, threading, json
 from datetime import datetime
 from TYPES import *
+from netifaces import ifaddresses, AF_INET6
 
 mcast_addr = 'ff05::4'
 port = 3000
@@ -9,7 +11,9 @@ port = 3000
 # Bind the socket to an address and port
 sock_cars = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 sock_cars.bind(('::', port))
-
+NODE_NAME = socket.gethostname()
+addresses = [i['addr'] for i in ifaddresses("eth0").setdefault(AF_INET6, [{'addr':'No IP addr'}])]
+IPV6_ADDR = addresses[0]
 # Bind the socket to a local address and port
 sock_server = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 local_address = "2001:690:2280:820::2"  # Use any available IPv6 address on the local machine
@@ -149,21 +153,57 @@ def receive_msg_from_server():
                 #linha para enviar para o carro (nao sei como)
                
 def update_cars_neigh_connected(data):   
-    cars_neigh_connected[data[FIELD_ORIGIN]] = data    
+    cars_neigh_connected[data[FIELD_ORIGIN]] = data
+
+#pegar na localizacao de um no
+def get_node_location(name):
+    f_pos = open("../"+name+".xy", "r")
+    pos = f_pos.read().split(" ") 
+    f_pos.close()
+    pos_x = float(pos[0])
+    pos_y = float(pos[1])
+    return pos_x, pos_y
+
+#envia uma mensagem com a sua posicao em multicast para os vizinhos
+#assim, os vizinhos sabem a sua posicao e tambem sabem que estao conectados
+def send_connection():
+    while True:
+        #ler a sua posicao regularmente
+        x, y = get_node_location(NODE_NAME)  
+        data = {
+            FIELD_TYPE_NODE: RSU,	
+            FIELD_ORIGIN: IPV6_ADDR,
+            FIELD_NAME: NODE_NAME,
+            FIELD_TYPE_MSG: CONNECTION_MSG,
+            FIELD_POS_X: x, #!!! ler do ficheiro de posições
+            FIELD_POS_Y: y,
+            # Obter timestamp atual
+            FIELD_TIMESTAMP:  datetime.timestamp(datetime.now())
+        }
+        data = json.dumps(data)
+        # Envia a mensagem para o grupo multicast
+        sock_cars.sendto(data.encode(), (mcast_addr, port))
+        #print(NODE_NAME,"Send Connection: "+data)
+        sock_cars.sleep(0.5)
+
 
 if __name__ == "__main__":
+    
+    send_conn = threading.Thread(target=send_connection, name="Send Conn Thread") #enviar mensagens de conexão em multicast
     print_th = threading.Thread(target=print_data, name="Send Thread")
     analyze = threading.Thread(target=analyze_connections, name="Analyze Thread")
     receive_from_cars = threading.Thread(target=receive_msg_from_cars, name="Recived Cars Thread")
     receive_from_server = threading.Thread(target=receive_msg_from_server, name="Recived Server Thread")
 
     print_th.start()
+    send_conn.start()
     analyze.start()
     receive_from_cars.start()
     receive_from_server.start()
 
     # Aguarda até que ambas as threads terminem
     print_th.join()
+    send_conn.join()
     analyze.join()
     receive_from_cars.join()
     receive_from_server.join()

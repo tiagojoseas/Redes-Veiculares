@@ -20,6 +20,7 @@ velocity = None
 addresses = [i['addr'] for i in ifaddresses("eth0").setdefault(AF_INET6, [{'addr':'No IP addr'}])]
 IPV6_ADDR = addresses[0]
 cars_connected = {} #dicionario para saber quais os carros conectados
+received_jam = []
 
 messages = [] #lista para guardar mensagens para depois reencaminhar
 colision_buffer = [] #lista para guardar mensagens de colisao para depois reencaminhar
@@ -273,7 +274,18 @@ def receive_msg():
                             #print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ","x:"+str(data[FIELD_EPICENTER_X]), "y:"+str(data[FIELD_EPICENTER_Y]), "("+data[FIELD_EPICENTER_NAME]+")") 
                         elif data[FIELD_NEXT_HOP] == mcast_addr:
                             # se tiver sido enviada em multicast
-                            print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ","x:"+str(data[FIELD_EPICENTER_X]), "y:"+str(data[FIELD_EPICENTER_Y]), "("+data[FIELD_EPICENTER_NAME]+")") 
+                            received = False
+                            for rj in received_jam:
+                                if received_jam and data[FIELD_TIMESTAMP] == rj[2] and data[FIELD_EPICENTER_X] == rj[0] and data[FIELD_EPICENTER_Y] == rj[1]:
+                                    received = True
+                                    break
+                                
+                            if not received:
+                                print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ","x:"+str(data[FIELD_EPICENTER_X]), "y:"+str(data[FIELD_EPICENTER_Y]), "("+data[FIELD_EPICENTER_NAME]+")") 
+                                received_jam.append([data[FIELD_EPICENTER_X],data[FIELD_EPICENTER_Y],data[FIELD_TIMESTAMP]])
+                                messages.append(data)
+                            received = False
+
                 #elif data[FIELD_DEST] == IPV6_ADDR and data[DENM_TYPE] == COLLISION_RISK:
                         #print(NODE_NAME,"[DENM] << COLLISION_RISK with "+data[FIELD_NAME])
                 

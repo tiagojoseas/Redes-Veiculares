@@ -308,7 +308,7 @@ def analyze_colisions():
                 total_velocity = float(msg[FIELD_VELOCITY]+velocity)/3.6
                 dist = ((node_x-x)**2+(node_y-y)**2)**(1/2) #calcular a distancia entre nos
                 time = dist/total_velocity
-                if time > 2:
+                if time < 2:
                     if msg[FIELD_NAME] in last_collision_risks.keys():
                         last_time = last_collision_risks[msg[FIELD_NAME]]
                         if datetime.timestamp(datetime.now()) - last_time > 5:                            

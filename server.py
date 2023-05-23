@@ -29,6 +29,7 @@ def start_server(server_address, server_port):
 
         try:
             data_storage[data[FIELD_ORIGIN]]
+
         except: 
             print("SERVER >> New car:",data[FIELD_NAME])
 

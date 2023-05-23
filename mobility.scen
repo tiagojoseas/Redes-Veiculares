@@ -7,9 +7,17 @@ $node_(12) set X_ 610.0
 $node_(12) set Y_ 882.0
 $node_(12) set Z_ 0.00
 
+$node_(13) set X_ 509.0
+$node_(13) set Y_ 300.0
+$node_(13) set Z_ 0.00
+
 $node_(14) set X_ 323.0
 $node_(14) set Y_ 754.0
 $node_(14) set Z_ 0.00
+
+$node_(15) set X_ 670.0
+$node_(15) set Y_ 415.0
+$node_(15) set Z_ 0.00
 
 $node_(16) set X_ 1135.0
 $node_(16) set Y_ 375.0

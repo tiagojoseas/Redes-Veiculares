@@ -13,7 +13,7 @@ MAX_CARS = 2
 data_storage = {}
 cars_connected = {}
 denm_dict = {}
-NODE_NAME = ""
+
 
 def analyze_connections(): #atualizar as conexoes
     while True:

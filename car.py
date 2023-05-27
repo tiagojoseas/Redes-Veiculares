@@ -132,17 +132,27 @@ def get_next_node_traffic_jam(node_x, node_y,radius_s, radius_b):
     ipCarAux = IPV6_ADDR
     #variavel auxiliar para guardar a distancia min atual
     #ipCarAux = "" #variavel auxiliar para guardar o ip do carro com a dist min atual
-    for ip_node in cars_connected.keys():
+    if dist < radius_s:
+        for ip_node in cars_connected.keys():
             car = cars_connected[ip_node]
             distAux = ((node_x-car.get(FIELD_POS_X))**2+(node_y-car.get(FIELD_POS_Y))**2)**(1/2)
-            if distAux > dist and distAux > radius_s and distAux < radius_b:
+            if distAux > dist:
                 ipCarAux = car[FIELD_ORIGIN]
                 dist = distAux
-            elif distAux <= dist and distAux > radius_b:
-                ipCarAux = car[FIELD_ORIGIN]
-                dist = distAux
+                if distAux > radius_s and distAux < radius_b:
+                    break
+    else:
+        for ip_node in cars_connected.keys():
+                car = cars_connected[ip_node]
+                distAux = ((node_x-car.get(FIELD_POS_X))**2+(node_y-car.get(FIELD_POS_Y))**2)**(1/2)
+                if distAux > dist and distAux > radius_s and distAux < radius_b:
+                    ipCarAux = car[FIELD_ORIGIN]
+                    dist = distAux
+                elif distAux <= dist and distAux > radius_b:
+                    ipCarAux = car[FIELD_ORIGIN]
+                    dist = distAux
 
-    
+        
     return ipCarAux
 
 
@@ -199,11 +209,13 @@ def forward_msg(): #encaminhar mensagens recebidas de outros nos
                     if dist < msg[FIELD_RADIUS_B] and dist > msg[FIELD_RADIUS_S]: 
                         # se estiver dentro da area grande e fora da area pequena
                         msg[FIELD_NEXT_HOP] = mcast_addr
-                        print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ","x:"+str(msg[FIELD_EPICENTER_X]), "y:"+str(msg[FIELD_EPICENTER_Y]), "("+msg[FIELD_EPICENTER_NAME]+")") 
+                        if msg[FIELD_ORIGIN] != IPV6_ADDR:
+                            print (NODE_NAME,"[DENM] << TRAFFIC_JAM in ","x:"+str(msg[FIELD_EPICENTER_X]), "y:"+str(msg[FIELD_EPICENTER_Y]),"time: "+str(msg[FIELD_TIMESTAMP]), "("+msg[FIELD_EPICENTER_NAME]+")") 
                     else:   
                         # se estiver fora da area
-                        msg[FIELD_NEXT_HOP] = get_next_node_traffic_jam(msg[FIELD_EPICENTER_X],msg[FIELD_EPICENTER_Y],msg[FIELD_RADIUS_S],msg[FIELD_RADIUS_S])
-                denm_arr.append(msg)
+                        if msg[FIELD_NEXT_HOP] != mcast_addr or dist > msg[FIELD_RADIUS_S]:
+                            msg[FIELD_NEXT_HOP] = get_next_node_traffic_jam(msg[FIELD_EPICENTER_X],msg[FIELD_EPICENTER_Y],msg[FIELD_RADIUS_S],msg[FIELD_RADIUS_S])
+                    denm_arr.append(msg)
 
 
         for denm in denm_arr:
